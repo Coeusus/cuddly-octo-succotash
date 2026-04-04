@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audio Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #0ea5e9;
+      --correct: #16a34a;
+      --wrong: #dc2626;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 20px 40px rgba(0,0,0,0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 760px;
+      background: rgba(17, 24, 39, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+    }
+
+    .header {
+      padding: 28px 28px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .title {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .content {
+      padding: 28px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .pill {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      color: #bae6fd;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .card {
+      background: rgba(31, 41, 55, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px;
+    }
+
+    .question-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .progress {
+      width: 100%;
+      height: 10px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 0.3s ease;
+    }
+
+    .question-text {
+      font-size: clamp(22px, 3vw, 30px);
+      margin: 0 0 18px;
+      line-height: 1.2;
+    }
+
+    .audio-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      transition: transform 0.15s ease, opacity 0.15s ease, background 0.2s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button:disabled { cursor: not-allowed; opacity: 0.65; }
+
+    .primary-btn {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: white;
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+    }
+
+    .secondary-btn {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+      border: 1px solid var(--border);
+    }
+
+    .answers {
+      display: grid;
+      gap: 12px;
+    }
+
+    .answer-btn {
+      text-align: left;
+      width: 100%;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 600;
+    }
+
+    .answer-btn:hover:not(:disabled) {
+      background: rgba(255,255,255,0.09);
+    }
+
+    .answer-btn.correct {
+      background: rgba(22, 163, 74, 0.18);
+      border-color: rgba(22, 163, 74, 0.6);
+      color: #dcfce7;
+    }
+
+    .answer-btn.wrong {
+      background: rgba(220, 38, 38, 0.18);
+      border-color: rgba(220, 38, 38, 0.6);
+      color: #fee2e2;
+    }
+
+    .feedback {
+      min-height: 28px;
+      margin-top: 18px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .feedback.correct { color: #86efac; }
+    .feedback.wrong { color: #fca5a5; }
+
+    .hidden { display: none; }
+
+    .start-screen, .results-screen {
+      text-align: center;
+    }
+
+    .start-screen p, .results-screen p {
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 560px;
+      margin: 0 auto 20px;
+    }
+
+    .big-score {
+      font-size: clamp(48px, 8vw, 76px);
+      line-height: 1;
+      margin: 8px 0 12px;
+      font-weight: 900;
+    }
+
+    .small-note {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 16px;
+    }
+
+    code.inline {
+      background: rgba(255,255,255,0.08);
+      padding: 2px 6px;
+      border-radius: 8px;
+      color: #e2e8f0;
+    }
+
+    @media (max-width: 640px) {
+      .header, .content { padding: 20px; }
+      .card { padding: 18px; }
+      .question-meta { flex-direction: column; align-items: flex-start; }
+      .audio-wrap { flex-direction: column; align-items: stretch; }
+      .primary-btn, .secondary-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <h1 class="title">Audio Quiz</h1>
+      <p class="subtitle">Randomly pulls questions from your full pool each time someone starts a game.</p>
+    </div>
+
+    <div class="content">
+      <div id="startScreen" class="start-screen card">
+        <div class="pill-row">
+          <div class="pill">Random questions</div>
+          <div class="pill">Custom audio</div>
+          <div class="pill">GitHub Pages friendly</div>
+        </div>
+        <p>
+          Put your audio files in a <code class="inline">sounds</code> folder, edit the question list in this file,
+          then upload <code class="inline">index.html</code> and the folder to GitHub.
+        </p>
+        <button id="startBtn" class="primary-btn">Start Quiz</button>
+        <p class="small-note">Tip: keep clips short for faster loading.</p>
+      </div>
+
+      <div id="quizScreen" class="hidden">
+        <div class="question-meta">
+          <div id="questionCount">Question 1 of 10</div>
+          <div id="scoreCount">Score: 0</div>
+        </div>
+        <div class="progress">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+
+        <div class="card">
+          <h2 id="questionText" class="question-text"></h2>
+
+          <div class="audio-wrap">
+            <button id="playBtn" class="primary-btn">▶ Play Audio</button>
+            <button id="replayBtn" class="secondary-btn">↺ Replay</button>
+            <audio id="audioPlayer" preload="auto"></audio>
+          </div>
+
+          <div id="answers" class="answers"></div>
+          <div id="feedback" class="feedback"></div>
+        </div>
+      </div>
+
+      <div id="resultsScreen" class="results-screen card hidden">
+        <div class="pill-row" style="justify-content:center;">
+          <div class="pill">Finished</div>
+        </div>
+        <p>You made it to the end.</p>
+        <div id="finalScore" class="big-score">0/0</div>
+        <p id="finalMessage"></p>
+        <button id="restartBtn" class="primary-btn">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /*
+      =========================
+      HOW TO EDIT THIS QUIZ
+      =========================
+      1. Put your audio files inside a folder named: sounds
+      2. Replace the sample questions below with your own
+      3. For each question:
+         - prompt: the text shown on screen
+         - audio: path to your audio file
+         - options: the 4 answer choices
+         - answer: the exact correct answer text
+
+      Example audio path:
+      audio: "sounds/door-close.mp3"
+    */
+
+    const QUESTIONS = [
+      {
+        prompt: "What sound is this?",
+        audio: "sounds/sample-1.mp3",
+        options: ["Door closing", "Microwave beep", "Keyboard typing", "Water pouring"],
+        answer: "Door closing"
+      },
+      {
+        prompt: "Identify the audio clip.",
+        audio: "sounds/sample-2.mp3",
+        options: ["Dog barking", "Velcro tearing", "Car starting", "Crowd cheering"],
+        answer: "Velcro tearing"
+      },
+      {
+        prompt: "What are you hearing?",
+        audio: "sounds/sample-3.mp3",
+        options: ["Coins dropping", "Phone vibrating", "Can opening", "Zipper"],
+        answer: "Zipper"
+      },
+      {
+        prompt: "Guess the sound.",
+        audio: "sounds/sample-4.mp3",
+        options: ["Rain", "Paper crumpling", "Shower running", "Fire crackling"],
+        answer: "Paper crumpling"
+      },
+      {
+        prompt: "Which sound is this?",
+        audio: "sounds/sample-5.mp3",
+        options: ["Lighter flick", "Seatbelt click", "Scissors cutting", "Glass tap"],
+        answer: "Seatbelt click"
+      },
+      {
+        prompt: "Name the sound effect.",
+        audio: "sounds/sample-6.mp3",
+        options: ["Toothbrush", "Electric razor", "Drill", "Blender"],
+        answer: "Electric razor"
+      },
+      {
+        prompt: "What is making this sound?",
+        audio: "sounds/sample-7.mp3",
+        options: ["Sneakers on court", "Vacuum cleaner", "Train braking", "Windshield wipers"],
+        answer: "Windshield wipers"
+      },
+      {
+        prompt: "Can you identify this sound?",
+        audio: "sounds/sample-8.mp3",
+        options: ["Stapler", "Tape dispenser", "Mouse click", "Pen click"],
+        answer: "Pen click"
+      },
+      {
+        prompt: "What sound are you hearing here?",
+        audio: "sounds/sample-9.mp3",
+        options: ["Bottle opening", "Soda pouring", "Bag zipper", "Lock turning"],
+        answer: "Lock turning"
+      },
+      {
+        prompt: "Pick the right answer for this clip.",
+        audio: "sounds/sample-10.mp3",
+        options: ["Chair scraping", "Printer", "Crowd clap", "Fan spinning"],
+        answer: "Chair scraping"
+      },
+      {
+        prompt: "Which option matches this sound?",
+        audio: "sounds/sample-11.mp3",
+        options: ["Key in door", "Lego pieces", "Dice roll", "Fork on plate"],
+        answer: "Key in door"
+      },
+      {
+        prompt: "What is this audio clip?",
+        audio: "sounds/sample-12.mp3",
+        options: ["Hand clap", "Book closing", "Pillow hit", "Cup set down"],
+        answer: "Book closing"
+      }
+    ];
+
+    const QUESTIONS_PER_GAME = 8;
+
+    const startScreen = document.getElementById("startScreen");
+    const quizScreen = document.getElementById("quizScreen");
+    const resultsScreen = document.getElementById("resultsScreen");
+
+    const startBtn = document.getElementById("startBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const playBtn = document.getElementById("playBtn");
+    const replayBtn = document.getElementById("replayBtn");
+
+    const questionCount = document.getElementById("questionCount");
+    const scoreCount = document.getElementById("scoreCount");
+    const progressBar = document.getElementById("progressBar");
+    const questionText = document.getElementById("questionText");
+    const answersEl = document.getElementById("answers");
+    const feedbackEl = document.getElementById("feedback");
+    const audioPlayer = document.getElementById("audioPlayer");
+    const finalScore = document.getElementById("finalScore");
+    const finalMessage = document.getElementById("finalMessage");
+
+    let gameQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function startGame() {
+      if (QUESTIONS.length < QUESTIONS_PER_GAME) {
+        alert(`You need at least ${QUESTIONS_PER_GAME} questions in the QUESTIONS array.`);
+        return;
+      }
+
+      gameQuestions = shuffle(QUESTIONS).slice(0, QUESTIONS_PER_GAME);
+      currentQuestionIndex = 0;
+      score = 0;
+      answered = false;
+
+      startScreen.classList.add("hidden");
+      resultsScreen.classList.add("hidden");
+      quizScreen.classList.remove("hidden");
+
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const question = gameQuestions[currentQuestionIndex];
+      answered = false;
+      feedbackEl.textContent = "";
+      feedbackEl.className = "feedback";
+      answersEl.innerHTML = "";
+
+      questionCount.textContent = `Question ${currentQuestionIndex + 1} of ${gameQuestions.length}`;
+      scoreCount.textContent = `Score: ${score}`;
+      progressBar.style.width = `${((currentQuestionIndex) / gameQuestions.length) * 100}%`;
+      questionText.textContent = question.prompt;
+      audioPlayer.src = question.audio;
+      audioPlayer.pause();
+      audioPlayer.currentTime = 0;
+
+      const shuffledOptions = shuffle(question.options);
+
+      shuffledOptions.forEach(option => {
+        const btn = document.createElement("button");
+        btn.className = "answer-btn";
+        btn.textContent = option;
+        btn.addEventListener("click", () => handleAnswer(option, btn));
+        answersEl.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(selectedOption, selectedButton) {
+      if (answered) return;
+      answered = true;
+
+      const question = gameQuestions[currentQuestionIndex];
+      const buttons = Array.from(document.querySelectorAll(".answer-btn"));
+
+      buttons.forEach(button => {
+        button.disabled = true;
+        const optionText = button.textContent;
+
+        if (optionText === question.answer) {
+          button.classList.add("correct");
+        }
+
+        if (button === selectedButton && selectedOption !== question.answer) {
+          button.classList.add("wrong");
+        }
+      });
+
+      if (selectedOption === question.answer) {
+        score += 1;
+        scoreCount.textContent = `Score: ${score}`;
+        feedbackEl.textContent = "Correct.";
+        feedbackEl.className = "feedback correct";
+      } else {
+        feedbackEl.textContent = `Wrong. Correct answer: ${question.answer}`;
+        feedbackEl.className = "feedback wrong";
+      }
+
+      setTimeout(() => {
+        currentQuestionIndex += 1;
+        if (currentQuestionIndex < gameQuestions.length) {
+          renderQuestion();
+        } else {
+          showResults();
+        }
+      }, 1400);
+    }
+
+    function showResults() {
+      quizScreen.classList.add("hidden");
+      resultsScreen.classList.remove("hidden");
+      progressBar.style.width = "100%";
+      finalScore.textContent = `${score}/${gameQuestions.length}`;
+
+      const percentage = (score / gameQuestions.length) * 100;
+      if (percentage === 100) {
+        finalMessage.textContent = "Perfect score. You clearly made this too easy for yourself.";
+      } else if (percentage >= 75) {
+        finalMessage.textContent = "Strong result. You knew your sounds.";
+      } else if (percentage >= 50) {
+        finalMessage.textContent = "Not bad. A few clips got you.";
+      } else {
+        finalMessage.textContent = "Rough round. Make the replay count.";
+      }
+    }
+
+    playBtn.addEventListener("click", () => {
+      audioPlayer.currentTime = 0;
+      audioPlayer.play().catch(() => {
+        alert("Audio could not play. Check that the file path is correct and the file exists.");
+      });
+    });
+
+    replayBtn.addEventListener("click", () => {
+      audioPlayer.currentTime = 0;
+      audioPlayer.play().catch(() => {
+        alert("Audio could not play. Check that the file path is correct and the file exists.");
+      });
+    });
+
+    startBtn.addEventListener("click", startGame);
+    restartBtn.addEventListener("click", startGame);
+  </script>
+</body>
+</html>
