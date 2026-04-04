@@ -399,6 +399,7 @@
     const scoreCount = document.getElementById("scoreCount");
     const progressBar = document.getElementById("progressBar");
     const questionText = document.getElementById("questionText");
+    const questionImage = document.getElementById("questionImage");
     const answersEl = document.getElementById("answers");
     const feedbackEl = document.getElementById("feedback");
     const audioPlayer = document.getElementById("audioPlayer");
@@ -448,6 +449,14 @@
       scoreCount.textContent = `Score: ${score}`;
       progressBar.style.width = `${((currentQuestionIndex) / gameQuestions.length) * 100}%`;
       questionText.textContent = question.prompt;
+
+      if (question.image) {
+      questionImage.src = question.image;
+      questionImage.style.display = "block";
+      } else {
+      questionImage.style.display = "none";
+      }
+
       audioPlayer.src = question.audio;
       audioPlayer.pause();
       audioPlayer.currentTime = 0;
