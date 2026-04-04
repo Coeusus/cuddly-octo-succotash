@@ -252,16 +252,9 @@
     <div class="content">
       <div id="startScreen" class="start-screen card">
         <div class="pill-row">
-          <div class="pill">Random questions</div>
-          <div class="pill">Custom audio</div>
-          <div class="pill">GitHub Pages friendly</div>
         </div>
-        <p>
-          Put your audio files in a <code class="inline">sounds</code> folder, edit the question list in this file,
-          then upload <code class="inline">index.html</code> and the folder to GitHub.
-        </p>
         <button id="startBtn" class="primary-btn">Start Quiz</button>
-        <p class="small-note">Tip: keep clips short for faster loading.</p>
+        <p class="small-note">Tip: Try Harder.</p>
       </div>
 
       <div id="quizScreen" class="hidden">
@@ -518,13 +511,13 @@
 
       const percentage = (score / gameQuestions.length) * 100;
       if (percentage === 100) {
-        finalMessage.textContent = "Perfect score. You clearly made this too easy for yourself.";
+        finalMessage.textContent = "Cheater.";
       } else if (percentage >= 75) {
         finalMessage.textContent = "Strong result. You knew your sounds.";
       } else if (percentage >= 50) {
-        finalMessage.textContent = "Not bad. A few clips got you.";
+        finalMessage.textContent = "Not bad. Try again.";
       } else {
-        finalMessage.textContent = "Rough round. Make the replay count.";
+        finalMessage.textContent = "Come on mate.";
       }
     }
 
