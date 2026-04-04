@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Audio Quiz</title>
+  <title>Super Fun Time Quiz</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -384,25 +384,25 @@
       },
       {
         prompt: "Identify this radio protocol system.",
-        image: "images/p25.jpg",
+        image: "images/P25.jpg",
         options: ["P25", "DMR", "TETRA", "NXDN"],
         answer: "P25"
       },
       {
         prompt: "Which protocol is shown here?",
-        image: "images/dmr.jpg",
+        image: "images/DMR.jpg",
         options: ["P25", "DMR", "EDACS", "LTR"],
         answer: "DMR"
       },
       {
         prompt: "What trunked radio system is this?",
-        image: "images/tetra.jpg",
+        image: "images/TETRA.jpg",
         options: ["NXDN", "TETRA", "P25", "MPT-1327"],
         answer: "TETRA"
      },
      {
        prompt: "Identify the protocol from the image.",
-       image: "images/nxdn.jpg",
+       image: "images/NXDN.jpg",
        options: ["DMR", "NXDN", "P25", "OpenSky"],
        answer: "NXDN"
      }
@@ -418,6 +418,7 @@
     const restartBtn = document.getElementById("restartBtn");
     const playBtn = document.getElementById("playBtn");
     const replayBtn = document.getElementById("replayBtn");
+    const audioWrap = document.querySelector(".audio-wrap");
 
     const questionCount = document.getElementById("questionCount");
     const scoreCount = document.getElementById("scoreCount");
@@ -474,16 +475,24 @@
       progressBar.style.width = `${((currentQuestionIndex) / gameQuestions.length) * 100}%`;
       questionText.textContent = question.prompt;
 
-      if (question.image) {
+    if (question.image) {
       questionImage.src = question.image;
       questionImage.style.display = "block";
-      } else {
-      questionImage.style.display = "none";
-      }
+    } else {
+     questionImage.style.display = "none";
+     }
 
+    if (question.audio) {
+      audioWrap.style.display = "flex";
       audioPlayer.src = question.audio;
       audioPlayer.pause();
       audioPlayer.currentTime = 0;
+    } else {
+      audioWrap.style.display = "none";
+      audioPlayer.pause();
+      audioPlayer.removeAttribute("src");
+      audioPlayer.load();
+    }
 
       const shuffledOptions = shuffle(question.options);
 
