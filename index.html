@@ -270,9 +270,12 @@
           <h2 id="questionText" class="question-text"></h2>
           <img id="questionImage" style="max-width:100%; border-radius:12px; margin-bottom:15px; display:none;">
           <div class="audio-wrap">
-            <button id="playBtn" class="primary-btn">▶ Play Audio</button>
-            <button id="replayBtn" class="secondary-btn">↺ Replay</button>
-            <audio id="audioPlayer" preload="auto"></audio>
+           <button id="playBtn" class="primary-btn">▶ Play Audio</button>
+           <button id="pauseBtn" class="secondary-btn">⏸ Pause</button>
+           <button id="replayBtn" class="secondary-btn">↺ Replay</button>
+           <label for="volumeSlider" style="color: var(--muted); font-size: 14px;">Volume</label>
+           <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="1">
+           <audio id="audioPlayer" preload="auto"></audio>
           </div>
 
           <div id="answers" class="answers"></div>
@@ -417,7 +420,9 @@
     const startBtn = document.getElementById("startBtn");
     const restartBtn = document.getElementById("restartBtn");
     const playBtn = document.getElementById("playBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
     const replayBtn = document.getElementById("replayBtn");
+    const volumeSlider = document.getElementById("volumeSlider");
     const audioWrap = document.querySelector(".audio-wrap");
 
     const questionCount = document.getElementById("questionCount");
@@ -564,18 +569,25 @@
     }
 
     playBtn.addEventListener("click", () => {
-      audioPlayer.currentTime = 0;
-      audioPlayer.play().catch(() => {
-        alert("Audio could not play. Check that the file path is correct and the file exists.");
-      });
+     audioPlayer.play().catch(() => {
+    alert("Audio could not play. Check that the file path is correct and the file exists.");
     });
+   });
 
-    replayBtn.addEventListener("click", () => {
-      audioPlayer.currentTime = 0;
-      audioPlayer.play().catch(() => {
-        alert("Audio could not play. Check that the file path is correct and the file exists.");
-      });
-    });
+    pauseBtn.addEventListener("click", () => {
+  audioPlayer.pause();
+  });
+
+  replayBtn.addEventListener("click", () => {
+  audioPlayer.currentTime = 0;
+  audioPlayer.play().catch(() => {
+    alert("Audio could not play. Check that the file path is correct and the file exists.");
+  });
+});
+
+volumeSlider.addEventListener("input", () => {
+  audioPlayer.volume = volumeSlider.value;
+});
 
     startBtn.addEventListener("click", startGame);
     restartBtn.addEventListener("click", startGame);
