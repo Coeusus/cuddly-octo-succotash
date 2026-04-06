@@ -497,8 +497,31 @@ const db = firebase.firestore();
     // SAVE SCORE TO FIREBASE
 async function saveScore(name, score, total) {
   try {
+    const cleanName = (name || "Anonymous").trim().slice(0, 20) || "Anonymous";
+
+    const existingQuery = await db
+      .collection("leaderboard")
+      .where("name", "==", cleanName)
+      .limit(1)
+      .get();
+
+    if (!existingQuery.empty) {
+      const doc = existingQuery.docs[0];
+      const existingData = doc.data();
+
+      if (score > existingData.score) {
+        await db.collection("leaderboard").doc(doc.id).update({
+          score: score,
+          total: total,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+
+      return;
+    }
+
     await db.collection("leaderboard").add({
-      name: name || "Anonymous",
+      name: cleanName,
       score: score,
       total: total,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -524,6 +547,11 @@ snapshot.forEach((doc) => {
   const entry = doc.data();
   const li = document.createElement("li");
   li.textContent = `${rank}. ${entry.name} - ${entry.score}/${entry.total}`;
+
+  if (rank === 1) li.style.fontWeight = "bold";
+  if (rank === 2) li.style.opacity = "0.9";
+  if (rank === 3) li.style.opacity = "0.8";
+
   leaderboardList.appendChild(li);
   rank++;
 });
@@ -658,12 +686,15 @@ snapshot.forEach((doc) => {
     finalMessage.textContent = "Bruh.";
   }
 
- const playerName = (prompt("Enter your name for the leaderboard:") || "Anonymous")
-  .trim()
-  .slice(0, 20);
-      await saveScore(playerName, score, gameQuestions.length);
-     await loadLeaderboard();
-     }
+   let playerName = prompt("Enter your name for the leaderboard:") || "Anonymous";
+   playerName = playerName.trim().slice(0, 20);
+
+   if (!playerName) {
+  playerName = "Anonymous";
+    }
+
+   await saveScore(playerName, score, gameQuestions.length);
+   await loadLeaderboard();
 
     playBtn.addEventListener("click", () => {
      audioPlayer.play().catch(() => {
