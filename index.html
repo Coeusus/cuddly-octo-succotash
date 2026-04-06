@@ -497,36 +497,32 @@ const db = firebase.firestore();
     // SAVE SCORE TO FIREBASE
 async function saveScore(name, score, total) {
   try {
-    const cleanName = (name || "Anonymous").trim().slice(0, 20) || "Anonymous";
+    const cleanName =
+      (name || "Anonymous").trim().slice(0, 20) || "Anonymous";
 
-    const existingQuery = await db
-      .collection("leaderboard")
-      .where("name", "==", cleanName)
-      .limit(1)
-      .get();
+    const docId = cleanName.toLowerCase();
+    const ref = db.collection("leaderboard").doc(docId);
+    const snap = await ref.get();
 
-    if (!existingQuery.empty) {
-      const doc = existingQuery.docs[0];
-      const existingData = doc.data();
-
+    if (snap.exists) {
+      const existingData = snap.data();
       if (score > existingData.score) {
-        await db.collection("leaderboard").doc(doc.id).update({
+        await ref.update({
+          name: cleanName,
           score: score,
           total: total,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
       }
-
       return;
     }
 
-    await db.collection("leaderboard").add({
+    await ref.set({
       name: cleanName,
       score: score,
       total: total,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-
   } catch (error) {
     console.error("Error saving score:", error);
   }
