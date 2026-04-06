@@ -497,15 +497,15 @@ const db = firebase.firestore();
     // SAVE SCORE TO FIREBASE
 async function saveScore(name, score, total) {
   try {
-    const cleanName =
-      (name || "Anonymous").trim().slice(0, 20) || "Anonymous";
-
+    const cleanName = (name || "Anonymous").trim().slice(0, 20) || "Anonymous";
     const docId = cleanName.toLowerCase();
+
     const ref = db.collection("leaderboard").doc(docId);
     const snap = await ref.get();
 
     if (snap.exists) {
       const existingData = snap.data();
+
       if (score > existingData.score) {
         await ref.update({
           name: cleanName,
@@ -514,6 +514,7 @@ async function saveScore(name, score, total) {
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
       }
+
       return;
     }
 
