@@ -494,14 +494,50 @@
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+    // SAVE SCORE TO FIREBASE
+async function saveScore(name, score, total) {
+  try {
+    await db.collection("leaderboard").add({
+      name: name || "Anonymous",
+      score: score,
+      total: total,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.error("Error saving score:", error);
+  }
+}
+
+// LOAD LEADERBOARD FROM FIREBASE
+async function loadLeaderboard() {
+  try {
+    const snapshot = await db
+      .collection("leaderboard")
+      .orderBy("score", "desc")
+      .limit(10)
+      .get();
+
+    leaderboardList.innerHTML = "";
+
+    snapshot.forEach((doc) => {
+      const entry = doc.data();
+      const li = document.createElement("li");
+      li.textContent = `${entry.name} - ${entry.score}/${entry.total}`;
+      leaderboardList.appendChild(li);
+    });
+  } catch (error) {
+    console.error("Error loading leaderboard:", error);
+  }
+}
+
     function shuffle(array) {
-      const copy = [...array];
-      for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-      }
-      return copy;
-    }
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
     function startGame() {
       if (QUESTIONS.length < QUESTIONS_PER_GAME) {
