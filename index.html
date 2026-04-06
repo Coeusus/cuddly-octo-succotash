@@ -539,44 +539,42 @@ async function loadLeaderboard() {
       .get();
 
     leaderboardList.innerHTML = "";
-let rank = 1;
+    let rank = 1;
 
-snapshot.forEach((doc) => {
-  const entry = doc.data();
-  const li = document.createElement("li");
+    snapshot.forEach((doc) => {
+      const entry = doc.data();
+      const li = document.createElement("li");
 
-let medal = "";
-let color = "";
-let fontSize = "16px";
+      let medal = "";
+      let color = "";
+      let fontSize = "16px";
 
-if (rank === 1) {
-  medal = "🥇 ";
-  color = "#FFD700";
-  fontSize = "20px";
-} else if (rank === 2) {
-  medal = "🥈 ";
-  color = "#C0C0C0";
-  fontSize = "18px";
-} else if (rank === 3) {
-  medal = "🥉 ";
-  color = "#CD7F32";
-  fontSize = "18px";
-}
+      if (rank === 1) {
+        medal = "🥇 ";
+        color = "#FFD700";
+        fontSize = "20px";
+      } else if (rank === 2) {
+        medal = "🥈 ";
+        color = "#C0C0C0";
+        fontSize = "18px";
+      } else if (rank === 3) {
+        medal = "🥉 ";
+        color = "#CD7F32";
+        fontSize = "18px";
+      }
 
-li.textContent = `${medal}${rank}. ${entry.name} — ${entry.score}/${entry.total}`;
+      li.textContent = `${medal}${entry.name} - ${entry.score}/${entry.total}`;
+      li.style.color = color;
+      li.style.fontSize = fontSize;
+      li.style.fontWeight = rank <= 3 ? "bold" : "normal";
 
-li.style.color = color;
-li.style.fontSize = fontSize;
-li.style.fontWeight = rank <= 3 ? "bold" : "normal";
-
-  leaderboardList.appendChild(li);
-  rank++;
-});
+      leaderboardList.appendChild(li);
+      rank++;
+    });
   } catch (error) {
     console.error("Error loading leaderboard:", error);
   }
 }
-
     function shuffle(array) {
   const copy = [...array];
   for (let i = copy.length - 1; i > 0; i--) {
