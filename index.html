@@ -543,12 +543,30 @@ let rank = 1;
 snapshot.forEach((doc) => {
   const entry = doc.data();
   const li = document.createElement("li");
-  
-  li.textContent = `${entry.name} - ${entry.score}/${entry.total}`;
 
-  if (rank === 1) li.style.fontWeight = "bold";
-  if (rank === 2) li.style.opacity = "0.9";
-  if (rank === 3) li.style.opacity = "0.8";
+let medal = "";
+let color = "";
+let fontSize = "16px";
+
+if (rank === 1) {
+  medal = "🥇 ";
+  color = "#FFD700";
+  fontSize = "20px";
+} else if (rank === 2) {
+  medal = "🥈 ";
+  color = "#C0C0C0";
+  fontSize = "18px";
+} else if (rank === 3) {
+  medal = "🥉 ";
+  color = "#CD7F32";
+  fontSize = "18px";
+}
+
+li.textContent = `${medal}${rank}. ${entry.name} — ${entry.score}/${entry.total}`;
+
+li.style.color = color;
+li.style.fontSize = fontSize;
+li.style.fontWeight = rank <= 3 ? "bold" : "normal";
 
   leaderboardList.appendChild(li);
   rank++;
