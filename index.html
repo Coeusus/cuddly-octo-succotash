@@ -696,7 +696,8 @@ snapshot.forEach((doc) => {
 
    await saveScore(playerName, score, gameQuestions.length);
    await loadLeaderboard();
-
+   }
+      
     playBtn.addEventListener("click", () => {
      audioPlayer.play().catch(() => {
     alert("Audio could not play. Check that the file path is correct and the file exists.");
