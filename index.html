@@ -518,13 +518,15 @@ async function loadLeaderboard() {
       .get();
 
     leaderboardList.innerHTML = "";
+let rank = 1;
 
-    snapshot.forEach((doc) => {
-      const entry = doc.data();
-      const li = document.createElement("li");
-      li.textContent = `${entry.name} - ${entry.score}/${entry.total}`;
-      leaderboardList.appendChild(li);
-    });
+snapshot.forEach((doc) => {
+  const entry = doc.data();
+  const li = document.createElement("li");
+  li.textContent = `${rank}. ${entry.name} - ${entry.score}/${entry.total}`;
+  leaderboardList.appendChild(li);
+  rank++;
+});
   } catch (error) {
     console.error("Error loading leaderboard:", error);
   }
@@ -656,7 +658,9 @@ async function loadLeaderboard() {
     finalMessage.textContent = "Bruh.";
   }
 
-  const playerName = prompt("Enter your name for the leaderboard:");
+ const playerName = (prompt("Enter your name for the leaderboard:") || "Anonymous")
+  .trim()
+  .slice(0, 20);
       await saveScore(playerName, score, gameQuestions.length);
      await loadLeaderboard();
      }
