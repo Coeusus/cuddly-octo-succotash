@@ -3,6 +3,8 @@
 <head>
   <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZXG1331WLX"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -29,6 +31,28 @@
     }
 
     * { box-sizing: border-box; }
+
+     .leaderboard-box {
+      margin-top: 20px;
+      padding: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+       text-align: left;
+       }
+
+      .leaderboard-box h3 {
+      margin: 0 0 12px;
+       }
+
+       #leaderboardList {
+        margin: 0;
+       padding-left: 22px;
+       }
+
+       #leaderboardList li {
+       margin-bottom: 8px;
+       }
 
     body {
       margin: 0;
@@ -299,6 +323,12 @@
         <p>You made it to the end.</p>
         <div id="finalScore" class="big-score">0/0</div>
         <p id="finalMessage"></p>
+        
+        <div class="leaderboard-box">
+        <h3>Leaderboard</h3>
+        <ol id="leaderboardList"></ol>
+       </div>
+        
         <button id="restartBtn" class="primary-btn">Play Again</button>
       </div>
     </div>
@@ -445,11 +475,24 @@
     audioPlayer.volume = 1;
     const finalScore = document.getElementById("finalScore");
     const finalMessage = document.getElementById("finalMessage");
+    const leaderboardList = document.getElementById("leaderboardList");
 
     let gameQuestions = [];
     let currentQuestionIndex = 0;
     let score = 0;
     let answered = false;
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyAOCKJbII7O7RRP5VdAJpSip8jMIpW72R0",
+  authDomain: "quiz-7af2f.firebaseapp.com",
+  projectId: "quiz-7af2f",
+  storageBucket: "quiz-7af2f.firebasestorage.app",
+  messagingSenderId: "553363353677",
+  appId: "1:553363353677:web:908dd4fc0356b586062c04",
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
     function shuffle(array) {
       const copy = [...array];
@@ -560,23 +603,27 @@
       }, 1400);
     }
 
-    function showResults() {
-      quizScreen.classList.add("hidden");
-      resultsScreen.classList.remove("hidden");
-      progressBar.style.width = "100%";
-      finalScore.textContent = `${score}/${gameQuestions.length}`;
+    async function showResults() {
+    quizScreen.classList.add("hidden");
+    resultsScreen.classList.remove("hidden");
+    progressBar.style.width = "100%";
+  finalScore.textContent = `${score}/${gameQuestions.length}`;
 
-      const percentage = (score / gameQuestions.length) * 100;
-      if (percentage === 100) {
-        finalMessage.textContent = "Cheater.";
-      } else if (percentage >= 75) {
-        finalMessage.textContent = "Decent. You know your signals.";
-      } else if (percentage >= 50) {
-        finalMessage.textContent = "Not bad. Try again.";
-      } else {
-        finalMessage.textContent = "Bruh.";
-      }
-    }
+  const percentage = (score / gameQuestions.length) * 100;
+  if (percentage === 100) {
+    finalMessage.textContent = "Cheater.";
+  } else if (percentage >= 75) {
+    finalMessage.textContent = "Decent. You know your signals.";
+  } else if (percentage >= 50) {
+    finalMessage.textContent = "Not bad. Try again.";
+  } else {
+    finalMessage.textContent = "Bruh.";
+  }
+
+  const playerName = prompt("Enter your name for the leaderboard:");
+      await saveScore(playerName, score, gameQuestions.length);
+     await loadLeaderboard();
+     }
 
     playBtn.addEventListener("click", () => {
      audioPlayer.play().catch(() => {
@@ -601,6 +648,9 @@ volumeSlider.addEventListener("input", () => {
 
     startBtn.addEventListener("click", startGame);
     restartBtn.addEventListener("click", startGame);
+
+    loadLeaderboard();
+    
   </script>
 </body>
 </html>
