@@ -526,6 +526,7 @@ async function saveScore(name, score, total) {
       total: total,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+
   } catch (error) {
     console.error("Error saving score:", error);
   }
