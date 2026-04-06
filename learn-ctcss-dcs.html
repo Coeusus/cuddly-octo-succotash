@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CTCSS and DCS | Signal School</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      line-height: 1.6;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 70px 20px 40px;
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    }
+
+    .hero h1 {
+      margin: 0 0 14px;
+      font-size: 2.8rem;
+    }
+
+    .hero p {
+      margin: 0 auto;
+      max-width: 750px;
+      color: #cbd5e1;
+      font-size: 1.1rem;
+    }
+
+    .hero-buttons {
+      margin-top: 24px;
+    }
+
+    .hero-buttons a {
+      display: inline-block;
+      margin: 8px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.2s ease;
+    }
+
+    .primary-btn {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    .secondary-btn {
+      border: 2px solid #38bdf8;
+      color: #f8fafc;
+      background: transparent;
+    }
+
+    .primary-btn:hover,
+    .secondary-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .content {
+      max-width: 950px;
+      margin: 0 auto;
+      padding: 50px 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 14px;
+      font-size: 1.6rem;
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+    }
+
+    .highlight {
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 4px solid #38bdf8;
+      padding: 16px 18px;
+      border-radius: 10px;
+      color: #e2e8f0;
+    }
+
+    ul {
+      padding-left: 22px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      margin-top: 16px;
+    }
+
+    .compare-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px 20px 40px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1>CTCSS and DCS</h1>
+    <p>
+      These are selective squelch systems that help a radio ignore unwanted transmissions
+      and only open the speaker when the correct tone or code is present.
+    </p>
+
+    <div class="hero-buttons">
+      <a href="index.html" class="secondary-btn">Back to Home</a>
+      <a href="quiz-radio.html" class="primary-btn">Go to Quiz</a>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="card">
+      <h2>Simple Explanation</h2>
+      <p>
+        CTCSS and DCS are not separate frequencies you talk on. They are extra signals added
+        underneath or alongside the main transmission so radios can decide whether to unmute.
+      </p>
+      <p>
+        They do not make your transmission private. They just stop radios from opening unless
+        the correct tone or code is detected.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Why They Exist</h2>
+      <div class="highlight">
+        On shared frequencies, many users may be transmitting. CTCSS and DCS help reduce
+        annoyance by making your radio stay quiet unless the incoming signal includes the
+        right tone or digital code.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>What is CTCSS?</h2>
+      <p>
+        CTCSS stands for <strong>Continuous Tone-Coded Squelch System</strong>. It adds a
+        very low-frequency tone to the transmission. If the receiving radio is set to the
+        same tone, it opens the speaker.
+      </p>
+      <p>
+        These tones are usually low enough that ordinary voice users do not notice them.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>What is DCS?</h2>
+      <p>
+        DCS stands for <strong>Digital-Coded Squelch</strong>. Instead of a continuous tone,
+        it sends a repeating digital pattern. If the receiving radio recognizes the correct
+        code, it opens the speaker.
+      </p>
+      <p>
+        In practice, it does the same job as CTCSS: keeping the radio muted unless the right
+        signal is present.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>CTCSS vs DCS</h2>
+      <div class="compare">
+        <div class="compare-box">
+          <h3>CTCSS</h3>
+          <ul>
+            <li>Uses a continuous low-frequency tone</li>
+            <li>Common in many analogue systems</li>
+            <li>Simple and widely supported</li>
+          </ul>
+        </div>
+
+        <div class="compare-box">
+          <h3>DCS</h3>
+          <ul>
+            <li>Uses a digital code pattern</li>
+            <li>Serves the same basic purpose</li>
+            <li>Can offer more code options</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>What They Do Not Do</h2>
+      <ul>
+        <li>They do <strong>not</strong> encrypt your audio.</li>
+        <li>They do <strong>not</strong> stop other radios from receiving your signal.</li>
+        <li>They do <strong>not</strong> make communications secret.</li>
+      </ul>
+      <p>
+        Anyone monitoring the frequency without tone/code filtering can still hear the traffic.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Common Problems</h2>
+      <ul>
+        <li><strong>Wrong tone/code:</strong> you see signal activity but hear nothing.</li>
+        <li><strong>No tone/code programmed:</strong> your radio may open for all traffic.</li>
+        <li><strong>Mismatched settings:</strong> one radio transmits, the other stays muted.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>In Practice</h2>
+      <p>
+        Imagine several groups are using the same repeater or frequency. Group A might use one
+        CTCSS tone, while Group B uses another. Both groups are technically sharing the same
+        channel, but each group’s radios only open for their own programmed tone.
+      </p>
+      <p>
+        The same idea applies to DCS, just with a digital code instead of a tone.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Quick Summary</h2>
+      <div class="highlight">
+        CTCSS uses a tone. DCS uses a digital code. Both are squelch systems that keep the
+        speaker muted unless the correct condition is met. They reduce unwanted audio, but
+        they do not provide privacy.
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Are you having fun yet
+  </footer>
+</body>
+</html>

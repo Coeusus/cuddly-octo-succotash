@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dan's Fun School of Signals</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 80px 20px 50px;
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    }
+
+    .hero h1 {
+      margin: 0 0 16px;
+      font-size: 3rem;
+    }
+
+    .hero p {
+      margin: 0 auto;
+      max-width: 700px;
+      font-size: 1.1rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    .hero-buttons {
+      margin-top: 28px;
+    }
+
+    .hero-buttons a {
+      display: inline-block;
+      margin: 8px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.2s ease;
+    }
+
+    .primary-btn {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-2px);
+      opacity: 0.95;
+    }
+
+    .secondary-btn {
+      background: transparent;
+      color: #f8fafc;
+      border: 2px solid #38bdf8;
+    }
+
+    .secondary-btn:hover {
+      transform: translateY(-2px);
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 50px 20px;
+    }
+
+    .section h2 {
+      margin-bottom: 20px;
+      font-size: 2rem;
+      text-align: center;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 24px;
+      text-decoration: none;
+      color: #f8fafc;
+      transition: 0.2s ease;
+      display: block;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: #38bdf8;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1.25rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 30px 20px 50px;
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+    .primary-btn,
+    .secondary-btn {
+    padding: 16px 28px;
+    font-size: 17px;
+    border-radius: 14px;
+    }
+
+   .card {
+   padding: 28px;
+  border-radius: 20px;
+}
+
+.section {
+  padding: 70px 20px;
+}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1>Dan's Fun School of Signals</h1>
+    <p>
+      Train your signal recognition, test your knowledge, and build up your understanding
+      of radio systems, protocols, and communications basics.
+    </p>
+
+    <div class="hero-buttons">
+      <a href="quiz-radio.html" class="primary-btn">Start Radio Quiz</a>
+      <a href="#learn" class="secondary-btn">Browse Learning Pages</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="section" id="learn">
+      <h2>Learn</h2>
+      <div class="card-grid">
+        <a href="learn-squelch.html" class="card">
+          <h3>What is Squelch?</h3>
+          <p>A simple explanation of carrier squelch, tone squelch, and why they matter.</p>
+        </a>
+
+        <a href="learn-ctcss-dcs.html" class="card">
+          <h3>CTCSS and DCS</h3>
+          <p>Learn the difference between the two and how they are used in radio systems.</p>
+        </a>
+
+        <a href="learn-frequency-bands.html" class="card">
+          <h3>Frequency Bands</h3>
+          <p>A quick guide to common bands, what they are used for, and how they behave.</p>
+        </a>
+        <a href="learn-waveforms.html" class="card">
+          <h3>Waveform Recognition</h3>
+          <p>Use images and examples to learn how to identify common signal types.</p>
+        </a>
+        </section>
+        <section class="section">
+          <h2>Quizzes</h2>
+          <div class="card-grid">
+            <a href="quiz-radio.html" class="card">
+              <h3>Radio Signals Quiz</h3>
+              <p>Test yourself on protocols, waveform images, and audio recognition.</p>
+        </a>
+            <a href="#" class="card">
+              <h3>Networking Quiz</h3>
+              <p>Coming soon.</p>
+      
+  </main>
+
+  <footer class="footer">
+    Built for training, testing, and improving signal knowledge.
+  </footer>
+</body>
+</html>

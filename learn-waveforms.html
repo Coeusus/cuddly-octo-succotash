@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Waveform Recognition | Signal School</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      line-height: 1.6;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 70px 20px 40px;
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    }
+
+    .hero h1 {
+      margin: 0 0 14px;
+      font-size: 2.6rem;
+    }
+
+    .hero p {
+      max-width: 750px;
+      margin: 0 auto;
+      color: #cbd5e1;
+    }
+
+    .hero-buttons a {
+      display: inline-block;
+      margin: 8px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .primary-btn {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    .secondary-btn {
+      border: 2px solid #38bdf8;
+      color: #f8fafc;
+    }
+
+    .content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 50px 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .wave-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .wave-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .wave-box img {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .highlight {
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 4px solid #38bdf8;
+      padding: 16px;
+      border-radius: 10px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>Waveform Recognition</h1>
+  <p>
+    Learning to recognise signal types visually is a key skill. Different modulation
+    methods create distinct patterns in waveform or spectrum displays.
+  </p>
+
+  <div class="hero-buttons">
+    <a href="index.html" class="secondary-btn">Back to Home</a>
+    <a href="quiz-radio.html" class="primary-btn">Go to Quiz</a>
+  </div>
+</header>
+
+<main class="content">
+
+  <section class="card">
+    <h2>What You’re Looking At</h2>
+    <p>
+      When you view a waveform or spectrum, you are seeing how a signal behaves over time
+      or across frequencies. Different systems create different shapes and patterns.
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>Common Signal Types</h2>
+
+    <div class="wave-grid">
+
+      <div class="wave-box">
+        <img src="images/am-wave.png" alt="AM waveform">
+        <h3>AM (Amplitude Modulation)</h3>
+        <p>Signal height changes with audio. Looks like a smooth envelope.</p>
+      </div>
+
+      <div class="wave-box">
+        <img src="images/fm-wave.png" alt="FM waveform">
+        <h3>FM (Frequency Modulation)</h3>
+        <p>Frequency shifts instead of amplitude. Looks more constant in height.</p>
+      </div>
+
+      <div class="wave-box">
+        <img src="images/digital-wave.png" alt="Digital waveform">
+        <h3>Digital Signals</h3>
+        <p>Often appear as blocky or structured patterns rather than smooth waves.</p>
+      </div>
+
+      <div class="wave-box">
+        <img src="images/noise-wave.png" alt="Noise waveform">
+        <h3>Noise</h3>
+        <p>Random, messy patterns with no clear structure.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>How to Identify Signals</h2>
+    <ul>
+      <li>Look for structure vs randomness</li>
+      <li>Check if amplitude changes or stays constant</li>
+      <li>Look for repeating patterns</li>
+      <li>Compare against known examples</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Why This Matters</h2>
+    <div class="highlight">
+      Being able to recognise signals visually helps you quickly identify what you're
+      dealing with — whether it's analogue voice, digital data, or just interference.
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Quick Summary</h2>
+    <div class="highlight">
+      Waveforms show how a signal behaves. Different modulation types create different
+      patterns. Learning to recognise these patterns is a key skill for understanding
+      radio systems.
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  Signal School learning page
+</footer>
+
+</body>
+</html>

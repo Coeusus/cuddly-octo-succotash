@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frequency Bands | Signal School</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      line-height: 1.6;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 70px 20px 40px;
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    }
+
+    .hero h1 {
+      margin: 0 0 14px;
+      font-size: 2.8rem;
+    }
+
+    .hero p {
+      margin: 0 auto;
+      max-width: 750px;
+      color: #cbd5e1;
+      font-size: 1.1rem;
+    }
+
+    .hero-buttons {
+      margin-top: 24px;
+    }
+
+    .hero-buttons a {
+      display: inline-block;
+      margin: 8px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.2s ease;
+    }
+
+    .primary-btn {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    .secondary-btn {
+      border: 2px solid #38bdf8;
+      color: #f8fafc;
+      background: transparent;
+    }
+
+    .primary-btn:hover,
+    .secondary-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 50px 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 14px;
+      font-size: 1.6rem;
+    }
+
+    .highlight {
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 4px solid #38bdf8;
+      padding: 16px 18px;
+      border-radius: 10px;
+      color: #e2e8f0;
+    }
+
+    .band-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .band-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .band-box h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    ul {
+      padding-left: 22px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+    }
+
+    th, td {
+      border: 1px solid #334155;
+      padding: 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #0f172a;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px 20px 40px;
+      color: #94a3b8;
+    }
+
+    @media (max-width: 700px) {
+      table,
+      thead,
+      tbody,
+      th,
+      td,
+      tr {
+        display: block;
+      }
+
+      th {
+        margin-top: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1>Frequency Bands</h1>
+    <p>
+      Frequency bands are ranges of radio frequencies. Different bands behave differently,
+      travel differently, and are used for different kinds of communication.
+    </p>
+
+    <div class="hero-buttons">
+      <a href="index.html" class="secondary-btn">Back to Home</a>
+      <a href="quiz-radio.html" class="primary-btn">Go to Quiz</a>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="card">
+      <h2>Simple Explanation</h2>
+      <p>
+        Radio signals are not all the same. They sit on different frequencies, and those
+        frequencies are grouped into bands. A band is just a chunk of the radio spectrum.
+      </p>
+      <p>
+        Lower frequencies often travel farther and bend around obstacles better. Higher
+        frequencies often carry more data, but they usually need a clearer path and do not
+        travel as far.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Why Bands Matter</h2>
+      <div class="highlight">
+        Two radios can both be “radios” and still behave very differently because they are
+        working on different bands. The band affects range, penetration, antenna size, and
+        what the system is good at.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Common Band Groups</h2>
+      <div class="band-grid">
+        <div class="band-box">
+          <h3>HF 3-30 MHz </h3>
+          <p>High Frequency. Often associated with long-distance communication.</p>
+        </div>
+
+        <div class="band-box">
+          <h3>VHF 30-300 MHz</h3>
+          <p>Very High Frequency. Common for many radio services and line-of-sight use.</p>
+        </div>
+
+        <div class="band-box">
+          <h3>UHF 300-3000 MHZ </h3>
+          <p>Ultra High Frequency. Common in handhelds, urban use, and shorter-range systems.</p>
+        </div>
+
+        <div class="band-box">
+          <h3>SHF and above</h3>
+          <p>Higher microwave-style bands often used for data links, radar, Wi-Fi, and more.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Quick Comparison</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Band</th>
+            <th>General Behaviour</th>
+            <th>Common Traits</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>HF</td>
+            <td>Can travel very long distances under the right conditions</td>
+            <td>Larger antennas, more affected by atmospheric conditions</td>
+          </tr>
+          <tr>
+            <td>VHF</td>
+            <td>Good balance of range and practicality</td>
+            <td>Often better in open areas, commonly line-of-sight</td>
+          </tr>
+          <tr>
+            <td>UHF</td>
+            <td>Usually shorter range than VHF in open areas</td>
+            <td>Often better around buildings and dense environments</td>
+          </tr>
+          <tr>
+            <td>Microwave / higher bands</td>
+            <td>Very high capacity, usually needs a clear path</td>
+            <td>Shorter range, directional systems are common</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>VHF vs UHF</h2>
+      <ul>
+        <li><strong>VHF</strong> generally works well outdoors and across open terrain.</li>
+        <li><strong>UHF</strong> is often preferred in cities, inside buildings, and tighter environments.</li>
+        <li>Neither is “better” in every situation. It depends on what you need.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>What Changes with Frequency?</h2>
+      <ul>
+        <li><strong>Range:</strong> some bands travel farther than others.</li>
+        <li><strong>Obstacle penetration:</strong> some signals deal with walls and buildings better.</li>
+        <li><strong>Wavelength:</strong> lower frequencies usually need bigger antennas.</li>
+        <li><strong>Bandwidth:</strong> higher frequencies can often support more data.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Common Misunderstanding</h2>
+      <p>
+        People often assume higher frequency automatically means better. That is not true.
+        Higher frequency can mean more capacity, but also more limitation in range and
+        obstacle handling depending on the environment.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>In Practice</h2>
+      <p>
+        A handheld radio used in an urban setting may be on UHF because that can suit
+        buildings and close-range work. A system meant for broader outdoor coverage may use
+        VHF. Long-distance specialised systems may use much lower bands. Data-heavy links may
+        use much higher ones.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Quick Summary</h2>
+      <div class="highlight">
+        A frequency band is just a range of frequencies. Different bands have different
+        strengths and weaknesses. The right band depends on whether you need distance,
+        penetration, data capacity, or a balance of all three.
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Signal School learning page
+  </footer>
+</body>
+</html>

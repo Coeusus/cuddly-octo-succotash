@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What is Squelch? | Signal School</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      line-height: 1.6;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 70px 20px 40px;
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    }
+
+    .hero h1 {
+      margin: 0 0 14px;
+      font-size: 2.8rem;
+    }
+
+    .hero p {
+      margin: 0 auto;
+      max-width: 750px;
+      color: #cbd5e1;
+      font-size: 1.1rem;
+    }
+
+    .hero-buttons {
+      margin-top: 24px;
+    }
+
+    .hero-buttons a {
+      display: inline-block;
+      margin: 8px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.2s ease;
+    }
+
+    .primary-btn {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    .secondary-btn {
+      border: 2px solid #38bdf8;
+      color: #f8fafc;
+      background: transparent;
+    }
+
+    .primary-btn:hover,
+    .secondary-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .content {
+      max-width: 950px;
+      margin: 0 auto;
+      padding: 50px 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 14px;
+      font-size: 1.6rem;
+    }
+
+    .highlight {
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 4px solid #38bdf8;
+      padding: 16px 18px;
+      border-radius: 10px;
+      color: #e2e8f0;
+    }
+
+    ul {
+      padding-left: 22px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px 20px 40px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1>What is Squelch?</h1>
+    <p>
+      Squelch is the control that stops a radio from constantly playing background noise
+      when there is no real signal to receive.
+    </p>
+
+    <div class="hero-buttons">
+      <a href="index.html" class="secondary-btn">Back to Home</a>
+      <a href="quiz-radio.html" class="primary-btn">Go to Quiz</a>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="card">
+      <h2>Simple Explanation</h2>
+      <p>
+        When a radio is turned on and no one is transmitting, the receiver still picks up
+        random noise. Without squelch, you would hear that hiss all the time.
+      </p>
+      <p>
+        Squelch acts like a gate. If the incoming signal is too weak or does not meet the
+        required condition, the speaker stays muted. When a valid signal comes in, the gate
+        opens and you hear the transmission.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Why It Matters</h2>
+      <div class="highlight">
+        Squelch makes radios usable. Without it, the speaker would often be full of constant
+        static instead of only opening when there is something worth hearing.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>How It Works</h2>
+      <ul>
+        <li>The radio listens for incoming signal energy.</li>
+        <li>If the signal is below the squelch threshold, audio stays muted.</li>
+        <li>If the signal is strong enough, the radio opens the speaker.</li>
+        <li>You then hear the voice, tone, or data transmission.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Types of Squelch</h2>
+      <h3>Carrier Squelch</h3>
+      <p>
+        This is the basic version. The radio opens whenever it detects a strong enough carrier
+        signal. It does not care who sent it, only that a signal is there.
+      </p>
+
+      <h3>Tone Squelch (CTCSS)</h3>
+      <p>
+        This version only opens if the incoming transmission includes the correct sub-audible
+        tone. That helps reduce unwanted traffic from other users on the same frequency.
+      </p>
+
+      <h3>Digital Coded Squelch (DCS)</h3>
+      <p>
+        This works similarly to tone squelch, but uses a digital code instead of a continuous
+        tone. It serves the same basic purpose: keeping the speaker closed unless the right
+        code is present.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>What Happens if Squelch is Set Wrong?</h2>
+      <ul>
+        <li><strong>Too low:</strong> the radio may open on noise and hiss constantly.</li>
+        <li><strong>Too high:</strong> weak but real transmissions may never break through.</li>
+        <li><strong>Wrong tone/code:</strong> the signal may be present, but you still hear nothing.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>In Practice</h2>
+      <p>
+        If you turn the squelch control down too far, the radio becomes noisy. If you turn it
+        up too far, you can miss weak signals. Good squelch setting is a balance between
+        blocking unwanted noise and still hearing valid transmissions.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Quick Summary</h2>
+      <div class="highlight">
+        Squelch is a filter that keeps your radio silent until a valid signal appears.
+        Carrier squelch listens for signal strength, while CTCSS and DCS add extra conditions
+        before the speaker opens.
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Signal School learning page
+  </footer>
+</body>
+</html>
