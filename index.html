@@ -547,7 +547,8 @@ let rank = 1;
 snapshot.forEach((doc) => {
   const entry = doc.data();
   const li = document.createElement("li");
-  li.textContent = `${rank}. ${entry.name} - ${entry.score}/${entry.total}`;
+  
+  li.textContent = `${entry.name} - ${entry.score}/${entry.total}`;
 
   if (rank === 1) li.style.fontWeight = "bold";
   if (rank === 2) li.style.opacity = "0.9";
