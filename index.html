@@ -273,6 +273,14 @@
       .audio-wrap { flex-direction: column; align-items: stretch; }
       .primary-btn, .secondary-btn { width: 100%; }
     }
+    .secondary-btn {
+  margin-top: 10px;
+}
+
+#startLeaderboard {
+  margin-top: 16px;
+  text-align: left;
+}
   </style>
 </head>
 <body>
@@ -287,6 +295,11 @@
         <div class="pill-row">
         </div>
         <button id="startBtn" class="primary-btn">Start Quiz</button>
+        <button id="viewLeaderboardBtn" class="secondary-btn">View Leaderboard</button>
+        <div id="startLeaderboard" class="hidden">
+       <h3>Leaderboard</h3>
+       <ol id="startLeaderboardList"></ol>
+       </div>
         <p class="small-note">Tip: Try Harder.</p>
       </div>
 
@@ -476,6 +489,9 @@
     const finalScore = document.getElementById("finalScore");
     const finalMessage = document.getElementById("finalMessage");
     const leaderboardList = document.getElementById("leaderboardList");
+    const viewLeaderboardBtn = document.getElementById("viewLeaderboardBtn");
+    const startLeaderboard = document.getElementById("startLeaderboard");
+    const startLeaderboardList = document.getElementById("startLeaderboardList");
 
     let gameQuestions = [];
     let currentQuestionIndex = 0;
@@ -573,6 +589,35 @@ async function loadLeaderboard() {
     });
   } catch (error) {
     console.error("Error loading leaderboard:", error);
+  }
+}
+    async function loadStartLeaderboard() {
+  try {
+    const snapshot = await db
+      .collection("leaderboard")
+      .orderBy("score", "desc")
+      .limit(10)
+      .get();
+
+    startLeaderboardList.innerHTML = "";
+    let rank = 1;
+
+    snapshot.forEach((doc) => {
+      const entry = doc.data();
+      const li = document.createElement("li");
+
+      let medal = "";
+
+      if (rank === 1) medal = "🥇 ";
+      else if (rank === 2) medal = "🥈 ";
+      else if (rank === 3) medal = "🥉 ";
+
+      li.textContent = `${medal}${entry.name} - ${entry.score}/${entry.total}`;
+      startLeaderboardList.appendChild(li);
+      rank++;
+    });
+  } catch (error) {
+    console.error("Error loading start leaderboard:", error);
   }
 }
     function shuffle(array) {
@@ -735,7 +780,16 @@ volumeSlider.addEventListener("input", () => {
 
     startBtn.addEventListener("click", startGame);
     restartBtn.addEventListener("click", startGame);
-
+viewLeaderboardBtn.addEventListener("click", async () => {
+  if (startLeaderboard.classList.contains("hidden")) {
+    await loadStartLeaderboard();
+    startLeaderboard.classList.remove("hidden");
+    viewLeaderboardBtn.textContent = "Hide Leaderboard";
+  } else {
+    startLeaderboard.classList.add("hidden");
+    viewLeaderboardBtn.textContent = "View Leaderboard";
+  }
+});
     loadLeaderboard();
     
   </script>
