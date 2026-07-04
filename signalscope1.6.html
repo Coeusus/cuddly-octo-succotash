@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SignalScope</title>
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#06101c; --bg2:#091523; --panel:#0d1a2a; --panel2:#101d2e;
+    --line:#1c3148; --line2:#263d58; --text:#f4f7fb; --muted:#aebbd0;
+    --blue:#2f91ff; --blue2:#0e73ff; --green:#6cff4f; --red:#ff4460;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% -10%,#132a43 0,#081422 34%,#040a12 100%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
+  .app{max-width:1220px;margin:0 auto;padding:8px 8px 14px;}
+  header{height:56px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;margin-bottom:8px;}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:25px;letter-spacing:-.4px}.brand svg{width:40px;height:32px}.version{font-size:13px;background:#173154;color:#cfe2ff;border:1px solid #25476d;border-radius:999px;padding:3px 9px;margin-left:4px}.top-actions{display:flex;align-items:center;gap:16px;justify-content:center}.top-right{display:flex;align-items:center;gap:16px;justify-content:flex-end}
+  button,.fakebtn,select,input[type=number]{background:linear-gradient(#132033,#0e1827);border:1px solid #263e5b;color:#eef5ff;border-radius:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
+  button,.fakebtn{padding:10px 17px;font-weight:750;font-size:15px;cursor:pointer}button:hover,.fakebtn:hover{border-color:#318fff}.primary{border-color:#1780ff;box-shadow:0 0 0 1px rgba(35,137,255,.35),inset 0 1px 0 rgba(255,255,255,.06);color:#54adff}.reset{min-width:110px}.dropdown{min-width:146px}.small-action{min-width:134px}
+  .layout{display:grid;grid-template-columns:330px 1fr;gap:8px}.sidebar{display:flex;flex-direction:column;gap:8px}.panel{background:linear-gradient(145deg,rgba(16,30,47,.94),rgba(9,20,34,.98));border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 30px rgba(0,0,0,.22);}.card{padding:16px}.card-title,.plot-title{font-size:15px;font-weight:850;text-transform:uppercase;letter-spacing:.02em;color:#dfe9f9;margin-bottom:14px}.plot-title{margin:0}.field{margin-bottom:14px}label{display:block;font-size:14px;color:#cbd6e7;margin-bottom:7px}select{width:100%;padding:10px 12px;font-size:15px;appearance:auto}input[type=number]{width:86px;padding:9px 10px;font-size:15px;text-align:right}.hintbox{font-size:14px;line-height:1.55;color:#c9dcff;background:#0d1d31;border:1px solid #173b62;border-radius:8px;padding:12px 13px;margin-top:-5px}.row{display:grid;grid-template-columns:1fr 86px 46px;gap:9px;align-items:center}.unit{color:#d6e0ef}.range-labels{display:flex;justify-content:space-between;color:#c2ccdb;font-size:13px;margin-top:5px}.ticks{display:flex;justify-content:space-between;color:#cbd6e7;font-size:13px;margin-top:5px}.ticks span:nth-child(2){transform:translateX(-5px)}input[type=range]{width:100%;accent-color:#2e95ff}.checkrow{display:flex;align-items:center;gap:10px;background:#07182a;border:1px solid #1b3855;border-radius:8px;padding:10px 11px;color:#d9e7f6;font-size:14px}.checkrow input{width:18px;height:18px;accent-color:#2e95ff}.small-note{color:#9fb1c8;font-size:12px;line-height:1.35;margin-top:6px}.two-col-control{display:grid;grid-template-columns:1fr 86px 44px;gap:9px;align-items:center}.about{display:flex;justify-content:space-between;align-items:center;color:#c8d5e6}.about span:last-child{font-size:22px;color:#94a7be}.main{display:grid;grid-template-columns:1fr;gap:8px}.plot{padding:16px}.plot-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.plot-meta{color:#cbd7ec;font-size:15px}.canvas-wrap{position:relative;background:#040b13;border:1px solid #1e344d;border-radius:6px;padding:0}canvas{display:block;width:100%;background:#040b13}.spectrum-canvas{height:310px}.waterfall-canvas{height:300px}.lower-grid{display:grid;grid-template-columns:1fr 1.05fr 1.05fr;gap:8px}.mini canvas{height:220px}.mini{padding:14px}.mini .plot-title{margin-bottom:10px}.signal-info{padding:18px 24px}.signal-info dl{display:grid;grid-template-columns:1fr auto;gap:15px 20px;margin:0;color:#cbd7ec;font-size:16px}.signal-info dt{color:#c6d0e2}.signal-info dd{margin:0;color:#f7fbff;font-weight:700}.wf-toolbar{display:flex;align-items:center;gap:12px;justify-content:flex-end;flex-wrap:wrap}.wf-meta{font-size:15px;color:#cbd7ec}.scale{display:flex;align-items:center;gap:7px;color:#c9d6e8}.scale-bar{width:10px;height:224px;background:var(--scale-gradient,linear-gradient(to bottom,#ff253f,#ff8d00,#ffff40,#38ff72,#21d0ff,#0b4aff,#031e98));border:1px solid #263c55;border-radius:2px}.waterfall-body{display:grid;grid-template-columns:28px 1fr 48px;gap:9px;align-items:center}.time-label{writing-mode:vertical-rl;transform:rotate(180deg);color:#c6d3e5;text-align:center;font-size:15px}.scale-labels{height:224px;display:flex;flex-direction:column;justify-content:space-between;color:#cbd7ec;font-size:14px}.tip{margin-top:22px;background:#061d39;border:1px solid #0d55a4;border-radius:10px;color:#62adff;padding:16px 18px;font-size:16px}.tip b{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;border:2px solid #1786ff;margin-right:12px}.hidden{display:none}.muted{color:#9fb1c8}
+
+  .detail-card{margin-top:12px;background:#081a2d;border:1px solid #183b62;border-radius:10px;padding:12px 13px;color:#d7e6fb}
+  .detail-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+  .detail-title{font-weight:850;font-size:16px;color:#f7fbff;line-height:1.15}
+  .badge{font-size:12px;font-weight:850;border-radius:999px;padding:4px 8px;border:1px solid rgba(255,255,255,.18);white-space:nowrap}
+  .badge.voice{background:#0e3822;color:#8dffb4}.badge.data{background:#0b2b55;color:#9dccff}.badge.cellular{background:#2d1c55;color:#d6b8ff}.badge.radar{background:#4b2608;color:#ffbd6e}.badge.broadcast{background:#4a3a08;color:#ffe96e}.badge.navigation{background:#26303c;color:#dde8f7}.badge.military{background:#4a111b;color:#ff98a9}.badge.custom{background:#1c2938;color:#cbd8e8}
+  .detail-desc{font-size:13.5px;line-height:1.45;color:#cbdaf0;margin:0 0 10px}
+  .detail-grid{display:grid;grid-template-columns:1fr;gap:7px}
+  .detail-row{display:grid;grid-template-columns:96px 1fr;gap:8px;font-size:12.8px;line-height:1.3}
+  .detail-row b{color:#94b8e8;font-weight:800}.detail-row span{color:#edf5ff}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}header{grid-template-columns:1fr}.top-actions,.top-right{justify-content:flex-start;flex-wrap:wrap}.lower-grid{grid-template-columns:1fr}.waterfall-body{grid-template-columns:1fr}.time-label,.scale-labels,.scale-bar{display:none}}
+
+
+  /* Full-screen analyzer layout: fixed-height work area, scrollable controls, fitted plots */
+  html,body{height:100%;overflow:hidden;}
+  .app{max-width:none;width:100%;height:100vh;margin:0;padding:8px;display:flex;flex-direction:column;overflow:hidden;}
+  header{flex:0 0 56px;margin-bottom:8px;}
+  .layout{flex:1 1 auto;min-height:0;height:calc(100vh - 72px);grid-template-columns:340px minmax(0,1fr);align-items:stretch;}
+  .sidebar{min-height:0;max-height:100%;overflow-y:auto;overflow-x:hidden;padding-right:6px;scrollbar-width:thin;scrollbar-color:#2f91ff #07111f;}
+  .sidebar::-webkit-scrollbar{width:10px}.sidebar::-webkit-scrollbar-track{background:#07111f;border-radius:999px}.sidebar::-webkit-scrollbar-thumb{background:#2f91ff;border-radius:999px;border:2px solid #07111f}
+  .sidebar .card{padding:13px;margin-bottom:12px}.sidebar .field{margin-bottom:11px}.sidebar .detail-card{max-height:310px;overflow:auto;}
+  .main{min-width:0;min-height:0;height:100%;display:grid;grid-template-rows:minmax(0,1.05fr) minmax(0,1.2fr) minmax(165px,.72fr);gap:8px;}
+  .plot,.mini,.signal-info{min-height:0;overflow:hidden;}
+  .plot{display:flex;flex-direction:column;padding:12px;}
+  .plot-head{flex:0 0 auto;margin-bottom:8px;}
+  canvas{min-width:0;}
+  .spectrum-canvas{flex:1 1 auto;height:auto;min-height:120px;}
+  .waterfall-body{flex:1 1 auto;min-height:0;height:100%;grid-template-columns:24px minmax(0,1fr) 48px;}
+  .waterfall-canvas{height:100%;min-height:135px;}
+  .scale-bar,.scale-labels{height:100%;min-height:135px;}
+  .lower-grid{min-height:0;height:100%;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(240px,.85fr);}
+  .mini{display:flex;flex-direction:column;padding:11px;}
+  .mini .plot-title{flex:0 0 auto;margin-bottom:7px;}
+  .mini canvas{flex:1 1 auto;height:auto;min-height:100px;}
+  .mini .plot-meta{flex:0 0 auto;}
+  .signal-info{padding:12px 15px;overflow:auto;}
+  .signal-info dl{font-size:14px;gap:8px 12px;}
+  .tip{display:none;}
+  @media(max-width:900px){html,body{overflow:auto}.app{height:auto;min-height:100vh;overflow:visible}.layout{height:auto;grid-template-columns:1fr}.sidebar{max-height:none;overflow:visible;padding-right:0}.main{height:auto;grid-template-rows:auto}.spectrum-canvas{height:260px}.waterfall-canvas{height:300px}.lower-grid{height:auto;grid-template-columns:1fr}.mini canvas{height:220px}.tip{display:block}}
+
+
+/* Independent scrolling right-side plots: do not squeeze or crop diagrams */
+.layout{height:calc(100vh - 72px);align-items:stretch;}
+.sidebar{height:100%;overflow-y:auto;overflow-x:hidden;padding-bottom:96px;}
+.main{height:100%;min-height:0;overflow-y:auto;overflow-x:hidden;display:block;padding-right:8px;scrollbar-width:thin;scrollbar-color:#2f91ff #07111f;}
+.main > .panel{margin-bottom:8px;}
+.plot,.mini,.signal-info{overflow:visible;}
+.plot{padding:16px;}
+.canvas-wrap{overflow:hidden;}
+.spectrum-canvas{height:310px;min-height:310px;}
+.waterfall-canvas{height:300px;min-height:300px;}
+.waterfall-body{height:auto;min-height:300px;grid-template-columns:28px minmax(0,1fr) 48px;}
+.scale-bar,.scale-labels{height:300px;min-height:300px;}
+.lower-grid{height:auto;min-height:0;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(280px,.85fr);}
+.mini{min-height:auto;}
+.mini canvas{height:220px;min-height:220px;}
+.signal-info{max-height:none;}
+@media(max-width:900px){.main{overflow:visible;padding-right:0}.spectrum-canvas{height:260px;min-height:260px}.waterfall-canvas{height:300px;min-height:300px}.waterfall-body{min-height:300px}.mini canvas{height:220px;min-height:220px}}
+
+
+/* Collapsible left sidebar sections */
+.sidebar{padding-bottom:170px;}
+.collapsible.card{padding:0;overflow:visible;}
+.section-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:linear-gradient(#132033,#0e1827);border:0;border-bottom:1px solid var(--line);border-radius:12px 12px 0 0;padding:13px 14px;color:#dfe9f9;text-transform:uppercase;letter-spacing:.02em;font-size:15px;font-weight:850;box-shadow:none;text-align:left;}
+.section-toggle:hover{border-color:var(--line);background:linear-gradient(#17263b,#101c2c)}
+.section-toggle .chev{transition:transform .18s ease;color:#8fb8e9;font-size:16px;}
+.collapsible.collapsed .section-toggle{border-bottom-color:transparent;border-radius:12px;}
+.collapsible.collapsed .section-toggle .chev{transform:rotate(-90deg);}
+.card-body{padding:13px;overflow:visible;max-height:none;opacity:1;}
+.collapsible.collapsed .card-body{display:none;}
+.sigid-button{width:100%;margin-top:10px;border-color:#1f6bb8;color:#9fd0ff;background:linear-gradient(#112945,#0b1d32);}
+.activity-chip{display:inline-block;margin-top:8px;padding:4px 8px;border:1px solid #264a72;border-radius:999px;background:#0a2038;color:#a7cffd;font-size:12px;font-weight:800;}
+@media(max-width:900px){.sidebar{padding-bottom:50px}.collapsible.collapsed .card-body{display:block}.collapsible.collapsed .section-toggle .chev{transform:none}}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 48 32" aria-hidden="true"><path d="M2 17h8l4-12 6 25 6-22 5 9h15" fill="none" stroke="#2e95ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>SignalScope</span><span class="version">v1.6</span>
+    </div>
+    <div class="top-actions">
+      <button id="play" class="primary">▮▮&nbsp; Pause</button>
+      <button id="clearwf" class="reset">↻&nbsp; Reset</button>
+    </div>
+      </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <section class="panel card collapsible" data-section="signal">
+        <button type="button" class="section-toggle"><span>Signal</span><span class="chev">▾</span></button>
+        <div class="card-body">
+        <div class="field"><label>Example signal</label><select id="preset">
+          <option value="custom">Custom</option><option value="dmr">DMR / MotoTRBO voice</option><option value="p25p1">P25 Phase 1 voice</option><option value="p25p2">P25 Phase 2 voice</option><option value="tetra">TETRA voice</option><option value="nxdn">NXDN narrow voice</option><option value="aprs">APRS packet</option><option value="ais">AIS marine data</option><option value="lora125">LoRa 125 kHz data</option><option value="adsb">ADS-B 1090 MHz data</option><option value="fmwide">Wideband FM broadcast</option><option value="amnarrow">Narrow AM voice</option><option value="vhfrepeater">VHF/UHF repeater voice</option><option value="cwslow">CW Morse slow</option><option value="cwfast">CW Morse fast</option><option value="rtty">RTTY / 2-tone FSK</option><option value="pager">POCSAG pager</option><option value="acars">ACARS VHF data</option><option value="meteor">Meteor burst packet</option><option value="wifi24">Wi-Fi / drone video 2.4 GHz</option><option value="dronectrl">Drone control link</option><option value="dronerid">Remote ID / drone beacon</option><option value="radarpulse">Short pulse radar</option><option value="radarchirp">FMCW / chirp radar</option><option value="othr">HF OTH radar-like sweep</option><option value="iff">IFF / transponder-style pulses</option><option value="weather">Weather radar-like sweep</option><option value="lte10">LTE 10 MHz downlink</option><option value="lte20">LTE 20 MHz downlink</option><option value="nr20">5G NR 20 MHz</option><option value="nr100">5G NR 100 MHz-style</option><option value="gsm">GSM carrier</option><option value="edge">EDGE / GMSK-style cellular</option><option value="celluplink">Cellular uplink burst</option><option value="nb_iot">NB-IoT narrow carrier</option>
+        </select></div>
+        <div class="field"><label>Traffic type</label><select id="traffic"><option value="voice">Voice</option><option value="data" selected>Data</option></select></div>
+        <div class="field"><label>Modulation</label><select id="mod"><option value="carrier">Carrier</option><option value="am">AM</option><option value="fm">FM</option><option value="ook">OOK / ASK</option><option value="fsk">2-FSK</option><option value="4fsk" selected>4-FSK</option><option value="bpsk">BPSK</option><option value="qpsk">QPSK</option><option value="lora">LoRa-like chirp</option><option value="gmsk">GMSK-ish</option><option value="cw">CW / Morse</option><option value="pulse">Pulse radar</option><option value="chirp">Radar chirp sweep</option><option value="hopping">Frequency hopping</option><option value="ofdm">OFDM-like wide data</option></select></div>
+        <div class="hintbox" id="modHelp">Four discrete frequency levels<br>(2 bits per symbol).</div>
+        <div class="detail-card" id="signalDetail">
+          <div class="detail-head"><div class="detail-title" id="detailTitle">Custom signal</div><span class="badge custom" id="detailBadge">Custom</span></div>
+          <p class="detail-desc" id="detailDesc">Manual signal profile. Adjust the controls to model the signal you want to study.</p>
+          <div class="detail-grid">
+            <div class="detail-row"><b>Users</b><span id="detailUsers">Training / custom examples</span></div>
+            <div class="detail-row"><b>Bandwidth</b><span id="detailBandwidth">Variable</span></div>
+            <div class="detail-row"><b>Rate</b><span id="detailRate">Variable</span></div>
+            <div class="detail-row"><b>Spectrum</b><span id="detailSpectrum">Depends on selected modulation.</span></div>
+            <div class="detail-row"><b>Waterfall</b><span id="detailWaterfall">Depends on selected modulation.</span></div>
+            <div class="detail-row"><b>Detection</b><span id="detailDetect">★★☆☆☆</span></div>
+            <div class="detail-row"><b>Encryption</b><span id="detailEncrypt">N/A</span></div>
+          </div>
+        </div>
+        <button id="sigidLink" class="sigid-button" type="button">↗ Open closest SigIDWiki match</button>
+      </div>
+      </section>
+
+      <section class="panel card collapsible" data-section="frequency">
+        <button type="button" class="section-toggle"><span>Frequency</span><span class="chev">▾</span></button>
+        <div class="card-body">
+        <div class="field"><label>Center frequency</label><div class="row"><input id="center" type="range" min="1" max="6000" value="915"><input id="centerNum" type="number" min="1" max="6000" step="0.001" value="915.000"><span class="unit">MHz</span></div></div>
+        <div class="field"><label>Spectrum span</label><div class="row"><input id="span" type="range" min="25" max="100000" value="500"><input id="spanNum" type="number" min="25" max="100000" step="1" value="500"><span class="unit">kHz</span></div></div>
+      </div>
+      </section>
+
+      <section class="panel card collapsible" data-section="parameters">
+        <button type="button" class="section-toggle"><span>Signal Parameters</span><span class="chev">▾</span></button>
+        <div class="card-body">
+        <div class="field"><label>Signal strength</label><div class="row"><input id="rssi" type="range" min="-120" max="-20" value="-76"><input id="rssiNum" type="number" min="-120" max="-20" step="1" value="-76"><span class="unit">dBm</span></div></div>
+        <div class="field"><label>Noise floor</label><div class="row"><input id="noise" type="range" min="-120" max="-40" value="-105"><input id="noiseNum" type="number" min="-120" max="-40" step="1" value="-105"><span class="unit">dBm</span></div></div>
+        <div class="field"><label>Symbol / tone rate</label><div class="row"><input id="sr" type="range" min="1" max="200" value="100"><input id="srNum" type="number" min="1" max="200" step="0.1" value="100"><span class="unit">Bd</span></div></div>
+        <div class="field"><label>Deviation / bandwidth</label><div class="row"><input id="bw" type="range" min="0.1" max="100000" value="25"><input id="bwNum" type="number" min="0.1" max="100000" step="0.1" value="25"><span class="unit">kHz</span></div></div>
+        <div class="field"><label>Hop rate</label><div class="row"><input id="hoprate" type="range" min="1" max="50" value="10"><input id="hoprateNum" type="number" min="1" max="50" step="1" value="10"><span class="unit">hop/s</span></div></div>
+      </div>
+      </section>
+
+      <section class="panel card collapsible" data-section="waterfall">
+        <button type="button" class="section-toggle"><span>Waterfall</span><span class="chev">▾</span></button>
+        <div class="card-body">
+        <div class="field"><label>Zoom <span class="muted">ⓘ</span></label><div class="row"><input id="wfzoom" type="range" min="1" max="32" value="1" step="0.1"><input id="wfzoomNum" type="number" min="1" max="32" step="0.1" value="1.0"><span class="unit">×</span></div><div class="ticks"><span>1×</span><span>2×</span><span>4×</span><span>8×</span><span>16×</span><span>32×</span></div></div>
+        <div class="field"><label>Tracking</label><label class="checkrow"><input id="wffollow" type="checkbox" checked> Centre active transmission</label><div class="small-note">Turn off to manually inspect the full span.</div></div>
+        <div class="field"><label>Position offset</label><div class="row"><input id="wfpan" type="range" min="-50" max="50" value="0"><input id="wfpanNum" type="number" min="-50" max="50" step="1" value="0.0"><span class="unit">kHz</span></div><div class="range-labels"><span>left</span><span>follow</span><span>right</span></div></div>
+        <div class="field"><label>Speed</label><select id="wfspeed"><option>Slow</option><option selected>Medium</option><option>Fast</option></select></div>
+        <div class="field"><label>Color scheme</label><select id="colorscheme"><option selected>Blue</option><option>Classic</option><option>Fire</option></select></div>
+      </div>
+      </section>
+
+      <section class="panel card collapsible" data-section="display">
+        <button type="button" class="section-toggle"><span>Display</span><span class="chev">▾</span></button>
+        <div class="card-body">
+        <div class="field"><label>RBW</label><div class="row"><input id="rbw" type="range" min="1" max="50" value="8"><input id="rbwNum" type="number" min="1" max="50" step="1" value="8"><span class="unit">RBW</span></div></div>
+        <div class="field"><label>VBW / smoothing</label><div class="row"><input id="vbw" type="range" min="0" max="95" value="35"><input id="vbwNum" type="number" min="0" max="95" step="1" value="35"><span class="unit">%</span></div></div>
+        <div class="field"><label>Persistence</label><select id="persistence"><option>Low</option><option selected>Medium</option><option>High</option></select></div>
+        <div class="field"><label>Smoothing</label><select id="smoothing"><option>Low</option><option selected>Medium</option><option>High</option></select></div>
+      </div>
+      </section>
+
+    </aside>
+
+    <main class="main">
+      <section class="panel plot">
+        <div class="plot-head"><div class="plot-title">Spectrum</div><div class="plot-meta" id="spectrumMeta">Span: 500 kHz &nbsp;•&nbsp; RBW: 488 Hz</div></div>
+        <canvas id="fft" class="spectrum-canvas" width="980" height="310"></canvas>
+      </section>
+
+      <section class="panel plot">
+        <div class="plot-head"><div class="plot-title">Waterfall</div><div class="wf-toolbar"><span class="wf-meta" id="wfTopMeta">Zoom: 1.0× &nbsp;•&nbsp; Offset: 0.0 kHz</span></div></div>
+        <div class="waterfall-body"><div class="time-label">← time</div><canvas id="waterfall" class="waterfall-canvas" width="980" height="300"></canvas><div class="scale"><div class="scale-bar"></div><div class="scale-labels"><span>dBFS</span><span>0</span><span>-20</span><span>-40</span><span>-60</span><span>-80</span><span>-100</span><span>-120</span></div></div></div>
+      </section>
+
+      <section class="lower-grid">
+        <section class="panel mini"><div class="plot-title">Time Domain</div><canvas id="time" width="320" height="220"></canvas><div class="plot-meta" style="text-align:center;margin-top:8px">2.0 ms/div</div></section>
+        <section class="panel mini"><div class="plot-title">Constellation</div><canvas id="iq" width="320" height="220"></canvas><div class="plot-meta" style="text-align:center;margin-top:8px" id="iqCaption">4-FSK (ideal)</div></section>
+        <section class="panel signal-info"><div class="plot-title">Signal Info</div><dl><dt>Modulation:</dt><dd id="infoMod">4-FSK</dd><dt>Symbol Rate:</dt><dd id="infoSr">1.00 ksym/s</dd><dt>Deviation:</dt><dd id="infoDev">±12.5 kHz</dd><dt>Channel BW:</dt><dd id="infoBw">~25.0 kHz</dd><dt>Bits / Symbol:</dt><dd id="infoBits">2</dd><dt>SNR (est):</dt><dd id="infoSnr">29 dB</dd></dl></section>
+      </section>
+    </main>
+  </div>
+
+  <div class="tip"><b>i</b>Tip: Use waterfall zoom to inspect fine details. Drag the waterfall to pan. Scroll to zoom (when hovered).</div>
+
+  <button id="random" class="hidden">Random symbols</button>
+  <div class="hidden"><span id="freqRange"></span><span id="occupied"></span><span id="snrReadout"></span><span id="wfZoomChip"></span><span id="wfSpanChip"></span><span id="wfPanChip"></span><span id="wfRangeText"></span><span id="wfPanText"></span><div id="wfZoomButtons"><button data-zoom="1"></button><button data-zoom="2"></button><button data-zoom="4"></button><button data-zoom="8"></button><button data-zoom="16"></button></div><button id="wfPanLeft"></button><button id="wfPanCenter"></button><button id="wfPanRight"></button></div>
+</div>
+<script>
+const N = 768;
+let symbols = Array.from({length:512}, () => Math.floor(Math.random()*4));
+let playing = true;
+let rafId = null;
+let frame = 0;
+let spectrumAvg = null;
+let currentPreset = "custom";
+let activeHopBin = null;
+const hopSequence = [3, 14, 6, 11, 1, 9, 16, 4, 12, 7, 0, 15, 5, 10, 2, 13, 8];
+
+const $ = id => document.getElementById(id);
+function val(id){ return Number($(id).value); }
+function randn(){ return (Math.random()*2-1) + (Math.random()*2-1) + (Math.random()*2-1); }
+function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+
+function fmtFreq(mhz){
+  if(mhz >= 1000) return (mhz/1000).toFixed(3) + " GHz";
+  return mhz.toFixed(3) + " MHz";
+}
+function fmtK(x){
+  if(x >= 1000) return (x/1000).toFixed(x >= 10000 ? 1 : 2) + " MHz";
+  if(x < 1) return x.toFixed(1) + " kHz";
+  return Math.round(x) + " kHz";
+}
+
+function settings(){
+  return {
+    mod: $("mod").value,
+    center: val("center"),
+    span: val("span"),
+    sr: val("sr"),
+    hoprate: val("hoprate"),
+    wfzoom: val("wfzoom"),
+    wfpan: val("wfpan"),
+    wffollow: $("wffollow") ? $("wffollow").checked : true,
+    wfspeed: $("wfspeed") ? $("wfspeed").value : "Medium",
+    colorscheme: $("colorscheme") ? $("colorscheme").value : "Blue",
+    bw: val("bw"),
+    rbw: val("rbw"),
+    vbw: val("vbw")/100,
+    noiseDb: val("noise"),
+    rssiDb: val("rssi")
+  };
+}
+
+function getActiveHopBin(frameShift){
+  const s = settings();
+  const dwellFrames = Math.max(1, Math.round(24 / s.hoprate));
+  const seqIndex = Math.floor(frameShift / dwellFrames) % hopSequence.length;
+  return hopSequence[seqIndex] / (hopSequence.length - 1);
+}
+
+function cycleActive(period, duty, phase=0){
+  const x = ((frame + phase) % period) / period;
+  return x < duty;
+}
+function softBurst(period, duty, phase=0){
+  const x = ((frame + phase) % period) / period;
+  if(x >= duty) return 0;
+  const edge = Math.min(0.18, Math.max(0.04, duty/4));
+  if(x < edge) return x/edge;
+  if(x > duty-edge) return (duty-x)/edge;
+  return 1;
+}
+function speechEnvelope(){
+  // PTT carrier stays up during a voice over, but speech energy breathes and
+  // natural gaps appear between overs.
+  const over = softBurst(360,0.72,31);
+  if(over <= 0) return 0;
+  const syllables = 0.72 + 0.20*Math.sin(frame*0.21) + 0.08*Math.sin(frame*0.057 + 1.7);
+  return clamp(over * syllables, 0.18, 1);
+}
+function dataEnvelope(){
+  const p = currentPreset;
+  if(["lte10","lte20","nr20","nr100","gsm","edge","fmwide"].includes(p)) return 1;
+  if(["dmr","p25p1","p25p2","tetra","nxdn","vhfrepeater","amnarrow"].includes(p)) return speechEnvelope();
+  if(p === "aprs") return softBurst(420,0.16,17);
+  if(p === "acars") return softBurst(300,0.12,49);
+  if(p === "ais") return softBurst(150,0.11,23);
+  if(p === "adsb") return cycleActive(34,0.10,5) ? 1 : 0;
+  if(p === "pager") return softBurst(260,0.35,77);
+  if(p === "meteor") return softBurst(520,0.10,131);
+  if(p === "cwslow") return cycleActive(50,0.42,0) ? 1 : 0;
+  if(p === "cwfast") return cycleActive(22,0.48,3) ? 1 : 0;
+  if(p === "rtty") return softBurst(260,0.58,11);
+  if(p === "lora125") return softBurst(280,0.32,71);
+  if(p === "wifi24") return softBurst(120,0.45,13);
+  if(p === "dronectrl") return softBurst(70,0.55,3);
+  if(p === "dronerid") return softBurst(240,0.10,91);
+  if(p === "celluplink") return softBurst(160,0.35,27);
+  if(p === "nb_iot") return softBurst(360,0.46,19);
+  if(["radarpulse","radarchirp","othr","iff","weather"].includes(p)) return 1;
+  const t = ($("traffic") ? $("traffic").value : "data");
+  return t === "voice" ? speechEnvelope() : softBurst(220,0.55,9);
+}
+function txActivity(){
+  const level = clamp(dataEnvelope(),0,1);
+  return {active:level>0.03, level, note:level>0.03 ? "TX active" : "TX idle"};
+}
+
+function generate(frameShift = 0){
+  const s = settings();
+  let y=[], I=[], Q=[];
+  activeHopBin = null;
+  let phase = 0;
+  const carrierCycles = 0.18;              // visual offset inside the simulated display
+  const baudNorm = s.sr / 1500;            // normalized message rate
+  const bwRatio = clamp(s.bw / Math.max(1, s.span), 0.001, 1);
+  const bwNorm = 0.002 + bwRatio * 0.08;
+  const devNorm = 0.001 + bwRatio * 0.045;
+  const snrDb = s.rssiDb - s.noiseDb;
+  const activity = txActivity();
+  const baseSignalAmp = clamp(Math.pow(10, (s.rssiDb + 100) / 45), 0.03, 2.2);
+  const signalAmp = baseSignalAmp * activity.level;
+  const noiseAmp = baseSignalAmp * Math.pow(10, -snrDb / 20) * 0.9;
+
+  for(let n=0;n<N;n++){
+    const t = n / N;
+    const symPos = t * Math.max(2, s.sr / 5);
+    const si = (Math.floor(symPos) + frameShift) % symbols.length;
+    const frac = symPos - Math.floor(symPos);
+    const a = symbols[si] & 1;
+    const b = (symbols[si] >> 1) & 1;
+    const na = symbols[(si + 1) % symbols.length] & 1;
+
+    const edge = Math.max(0.015, 0.45 - s.bw * 0.38);
+    const mix = frac > (1-edge) ? (frac - (1-edge)) / edge : 0;
+    const bitVal = a * (1-mix) + na * mix;
+    const bitHard = bitVal > 0.5 ? 1 : 0;
+
+    let amp = 1;
+    let freq = carrierCycles;
+    let phOffset = 0;
+    let extraSample = null;
+
+    const msg = Math.sin(2*Math.PI*(1 + s.sr/40)*t + frameShift*0.08);
+
+    if(s.mod === "carrier"){
+      freq = carrierCycles;
+    } else if(s.mod === "am"){
+      amp = 0.45 + (0.25 + bwRatio*0.65) * (0.5 + 0.5*msg);
+    } else if(s.mod === "fm"){
+      freq = carrierCycles + msg * devNorm * 0.35;
+    } else if(s.mod === "ook"){
+      amp = 0.08 + 0.92 * bitVal;
+    } else if(s.mod === "fsk"){
+      freq = carrierCycles + ((bitVal*2-1) * devNorm * 0.7);
+    } else if(s.mod === "4fsk"){
+      const level = [-3, -1, 1, 3][symbols[si] & 3];
+      freq = carrierCycles + level * devNorm * 0.32;
+    } else if(s.mod === "gmsk"){
+      const soft = Math.sin((bitVal - 0.5) * Math.PI);
+      freq = carrierCycles + soft * devNorm * 0.45;
+    } else if(s.mod === "bpsk"){
+      phOffset = bitHard ? 0 : Math.PI;
+    } else if(s.mod === "qpsk"){
+      phOffset = (a*2 + b) * Math.PI/2 + Math.PI/4;
+    } else if(s.mod === "lora"){
+      const sweep = ((frac + (frameShift % 60)/60) % 1) - 0.5;
+      freq = carrierCycles + sweep * (0.008 + bwRatio*0.22);
+    }
+
+    // Extra symbol-rate edge content. This helps fast digital signals widen naturally.
+    if(["ook","bpsk","qpsk","gmsk"].includes(s.mod)) {
+      freq += (bitVal - 0.5) * bwNorm * 0.12;
+    }
+
+    phase += 2*Math.PI*freq;
+    phase %= 2*Math.PI;
+
+    const sample = signalAmp * (extraSample !== null ? extraSample : amp * Math.sin(phase + phOffset)) + noiseAmp*randn();
+    y.push(sample);
+
+    if(s.mod === "bpsk"){
+      I.push((bitHard ? 1 : -1) + noiseAmp*randn()); Q.push(noiseAmp*randn());
+    } else if(s.mod === "qpsk"){
+      I.push((a ? 1 : -1) + noiseAmp*randn()); Q.push((b ? 1 : -1) + noiseAmp*randn());
+    } else if(s.mod === "fsk"){
+      I.push(bitHard ? 0.75 : -0.75); Q.push(noiseAmp*randn());
+    } else if(s.mod === "4fsk"){
+      const level = [-0.9, -0.3, 0.3, 0.9][symbols[si] & 3];
+      I.push(level + noiseAmp*randn()); Q.push(noiseAmp*randn());
+    } else if(s.mod === "ook" || s.mod === "am"){
+      I.push(amp + noiseAmp*randn()); Q.push(noiseAmp*randn());
+    } else if(s.mod === "lora" || s.mod === "chirp"){
+      I.push(Math.cos(phase) * (0.5+frac)); Q.push(Math.sin(phase) * (0.5+frac));
+    } else if(s.mod === "cw" || s.mod === "pulse"){
+      I.push(amp + noiseAmp*randn()); Q.push(noiseAmp*randn());
+    } else if(s.mod === "hopping" || s.mod === "ofdm"){
+      I.push(Math.cos(phase) + noiseAmp*randn()); Q.push(Math.sin(phase) + noiseAmp*randn());
+    } else {
+      I.push(Math.cos(phase) + noiseAmp*randn()); Q.push(Math.sin(phase) + noiseAmp*randn());
+    }
+  }
+  return {y,I,Q};
+}
+
+function drawAxes(ctx,w,h){
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle="#26313d"; ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(42,h/2); ctx.lineTo(w-12,h/2);
+  ctx.moveTo(42,12); ctx.lineTo(42,h-24);
+  ctx.stroke();
+}
+
+function drawTime(y){
+  const c=$("time"), ctx=c.getContext("2d"), w=c.width, h=c.height;
+  drawAxes(ctx,w,h);
+  ctx.strokeStyle="#20ee66"; ctx.lineWidth=2; ctx.beginPath();
+  for(let i=0;i<y.length;i++){
+    const x=42+i*(w-58)/(y.length-1);
+    const yy=h/2-y[i]*(h*0.33);
+    if(i===0) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
+  }
+  ctx.stroke();
+}
+
+function dftMag(y){
+  let mags=[];
+  for(let k=0;k<N/2;k++){
+    let re=0, im=0;
+    for(let n=0;n<N;n++){
+      const win = 0.5 - 0.5*Math.cos(2*Math.PI*n/(N-1));
+      const sample = y[n] * win;
+      const a=2*Math.PI*k*n/N;
+      re += sample*Math.cos(a);
+      im -= sample*Math.sin(a);
+    }
+    mags.push(Math.sqrt(re*re+im*im));
+  }
+
+  // RBW approximation: bin averaging.
+  const rbw = settings().rbw;
+  let smooth = mags.slice();
+  const radius = Math.max(0, Math.floor(rbw/4));
+  if(radius > 0){
+    smooth = mags.map((_,i)=>{
+      let sum=0, count=0;
+      for(let j=i-radius;j<=i+radius;j++){
+        if(j>=0 && j<mags.length){ sum += mags[j]; count++; }
+      }
+      return sum/count;
+    });
+  }
+
+  const max=Math.max(...smooth)||1;
+  let norm = smooth.map(v=>Math.pow(v/max, 0.48));
+
+  const s = settings();
+
+  // Frequency-hopping visual model: only one active channel at a time.
+  // RSSI and noise floor determine how bright/visible that channel is.
+  if(s.mod === "hopping"){
+    const width = Math.max(1, Math.floor(norm.length * Math.max(0.002, Math.min(0.015, s.bw / Math.max(1, s.span) * 0.04))));
+    const snr = s.rssiDb - s.noiseDb;
+    const signalLevel = clamp((snr + 5) / 45, 0.03, 1.0);
+    const noiseLevel = clamp((s.noiseDb + 120) / 80, 0.02, 0.55);
+
+    let hopNorm = norm.map(() => noiseLevel * (0.25 + Math.random() * 0.25));
+    const pos = Math.floor((0.08 + (activeHopBin ?? 0.5) * 0.84) * norm.length);
+
+    for(let j=-width; j<=width; j++){
+      const idx = pos + j;
+      if(idx >= 0 && idx < hopNorm.length){
+        const shape = Math.exp(-(j*j)/(width*width || 1));
+        hopNorm[idx] = Math.max(hopNorm[idx], noiseLevel + shape * signalLevel);
+      }
+    }
+    norm = hopNorm;
+  }
+
+  // VBW approximation: temporal smoothing.
+  const vbw = s.mod === "hopping" ? Math.min(s.vbw, 0.18) : s.vbw;
+  if(spectrumAvg && spectrumAvg.length === norm.length){
+    norm = norm.map((v,i)=>spectrumAvg[i]*vbw + v*(1-vbw));
+  }
+  spectrumAvg = norm.slice();
+  return norm;
+}
+
+function drawLabels(ctx,w,h){
+  const s=settings();
+  const left=s.center-s.span/2000;
+  const right=s.center+s.span/2000;
+  ctx.fillStyle="#9ca8b5";
+  ctx.font="12px system-ui";
+  ctx.fillText(fmtFreq(left), 46, h-8);
+  ctx.fillText(fmtFreq(s.center), w/2-38, h-8);
+  ctx.fillText(fmtFreq(right), w-118, h-8);
+}
+
+function transmissionFocusKHz(){
+  const s = settings();
+  const kind = presetKind();
+
+  // Most signals are centred on the tuned centre frequency. Hopping is the
+  // exception: the active transmitter is whichever hop channel is currently live.
+  if(s.mod === "hopping") return (getActiveHopBin(frame) - 0.5) * s.span;
+
+  // Chirps/sweeps are treated as one occupied transmission, so the viewport
+  // follows the occupied band centre rather than chasing the instantaneous sweep.
+  if(kind === "fastChirp" || kind === "slowSweep") return 0;
+
+  return 0;
+}
+
+function waterfallView(){
+  const s=settings();
+  const zoom = Math.max(1, s.wfzoom || 1);
+  const visibleSpan = s.span / zoom; // kHz shown in the waterfall
+  const maxPan = Math.max(0, (s.span - visibleSpan) / 2);
+  const manualPanKHz = clamp((s.wfpan || 0) / 50 * maxPan, -maxPan, maxPan);
+  const followKHz = s.wffollow ? transmissionFocusKHz() : 0;
+  const viewCenterKHz = clamp(followKHz + manualPanKHz, -maxPan, maxPan);
+  const left = s.center + (viewCenterKHz - visibleSpan/2) / 1000;
+  const right = s.center + (viewCenterKHz + visibleSpan/2) / 1000;
+  return {zoom, visibleSpan, panKHz:viewCenterKHz, manualPanKHz, followKHz, left, right};
+}
+
+function drawWaterfallLabels(ctx,w,h){
+  const v = waterfallView();
+  const mid = (v.left + v.right) / 2;
+  ctx.fillStyle="#9ca8b5";
+  ctx.font="12px system-ui";
+  ctx.fillText(fmtFreq(v.left), 46, h-8);
+  ctx.fillText(fmtFreq(mid), w/2-38, h-8);
+  ctx.fillText(fmtFreq(v.right), w-118, h-8);
+}
+
+
+function presetKind(){
+  if(["radarpulse","iff"].includes(currentPreset)) return "pulseTrain";
+  if(["radarchirp","weather"].includes(currentPreset)) return "fastChirp";
+  if(currentPreset === "othr") return "slowSweep";
+  if(["lte10","lte20","nr20","nr100","wifi24","dronerid","celluplink","nb_iot"].includes(currentPreset)) return "blockOfdm";
+  if(["gsm","edge"].includes(currentPreset)) return "cellCarrier";
+  return null;
+}
+
+function levelFromRssi(){
+  const s = settings();
+  const snr = s.rssiDb - s.noiseDb;
+
+  // Display model, not a calibrated receiver:
+  // noiseDb controls the visible red baseline;
+  // RSSI controls how far above that baseline the signal rises.
+  const noise = clamp(0.22 + ((s.noiseDb + 120) / 80) * 0.26, 0.18, 0.48);
+  const activity = txActivity();
+  const signal = clamp((snr - 1) / 42, 0.00, 0.72) * activity.level;
+
+  return { signal, noise, snr, active: activity.active, activityNote: activity.note };
+}
+
+function drawNoiseRow(ctx,w,rowH,noiseLevel){
+  const cols = Math.floor(w / 2);
+  for(let i=0;i<cols;i++){
+    let speckle = noiseLevel * (0.72 + Math.random()*0.55);
+    if(Math.random() < 0.035) speckle += 0.12 * Math.random();
+    ctx.fillStyle = color(clamp(speckle,0,1));
+    ctx.fillRect(i*2,0,2,rowH);
+  }
+}
+
+function waterfallXFromOffset(freqOffsetKHz, view, w){
+  const usableW = w - 90;
+  const u = (freqOffsetKHz - view.panKHz + view.visibleSpan/2) / view.visibleSpan;
+  return 42 + u * usableW;
+}
+
+function drawWaterfallBand(ctx, w, rowH, centerOffsetKHz, bandwidthKHz, view, intensity, minWidth=3, maxWidth=80){
+  const x = waterfallXFromOffset(centerOffsetKHz, view, w);
+  const usableW = w - 90;
+  const width = Math.max(minWidth, Math.min(maxWidth, (bandwidthKHz / Math.max(1, view.visibleSpan)) * usableW));
+  if(x >= 42-width && x <= w-48+width){
+    ctx.fillStyle = color(clamp(intensity,0,1));
+    ctx.fillRect(x-width/2,0,width,rowH);
+  }
+}
+
+function applyDisplayLevels(mags){
+  const lvl = levelFromRssi();
+  return mags.map(v => {
+    let n = lvl.noise * (0.78 + Math.random()*0.40);
+    if(Math.random() < 0.02) n += 0.10*Math.random();
+    return clamp(n + v * lvl.signal, 0, 1);
+  });
+}
+
+
+function drawFFT(y){
+  const c=$("fft"), ctx=c.getContext("2d"), w=c.width, h=c.height;
+  drawAxes(ctx,w,h);
+  const s = settings();
+  const kind = presetKind();
+
+  if(s.mod === "hopping" || s.mod === "4fsk" || kind){
+    const lvl = levelFromRssi();
+    ctx.strokeStyle="#2e95ff";
+    ctx.lineWidth=2;
+    ctx.beginPath();
+
+    for(let x=42;x<w-16;x++){
+      const u = (x-42)/(w-58);
+      let peak = 0;
+
+      if(s.mod === "hopping"){
+        const hop = getActiveHopBin(frame);
+        const width = Math.max(0.006, Math.min(0.035, s.bw / Math.max(1, s.span)));
+        peak = Math.exp(-Math.pow((u-hop)/width,2)) * lvl.signal;
+      } else if(s.mod === "4fsk"){
+        const spacing = Math.max(0.035, Math.min(0.18, s.bw / Math.max(1, s.span) * 0.65));
+        const width = Math.max(0.006, spacing * 0.16);
+        const tones = [0.5 - 1.5*spacing, 0.5 - 0.5*spacing, 0.5 + 0.5*spacing, 0.5 + 1.5*spacing];
+        peak = tones.reduce((m,tone)=>Math.max(m, Math.exp(-Math.pow((u-tone)/width,2)) * lvl.signal), 0);
+      } else if(kind === "pulseTrain"){
+        const width = Math.max(0.02, Math.min(0.18, s.bw / Math.max(1, s.span)));
+        peak = Math.exp(-Math.pow((u-0.5)/width,2)) * lvl.signal;
+      } else if(kind === "fastChirp" || kind === "slowSweep"){
+        const width = Math.max(0.18, Math.min(0.9, s.bw / Math.max(1, s.span)));
+        peak = (Math.abs(u-0.5) < width/2) ? lvl.signal * (0.38 + 0.13*Math.sin(u*40+frame/6)) : 0;
+      } else if(kind === "blockOfdm"){
+        const width = Math.max(0.08, Math.min(0.92, s.bw / Math.max(1, s.span)));
+        const inside = Math.abs(u-0.5) < width/2;
+        peak = inside ? lvl.signal * (0.35 + 0.16*Math.random()) : 0;
+      } else if(kind === "cellCarrier"){
+        const width = Math.max(0.015, Math.min(0.12, s.bw / Math.max(1, s.span)));
+        peak = Math.exp(-Math.pow((u-0.5)/width,2)) * lvl.signal;
+      }
+
+      const v = clamp(lvl.noise*(0.75 + Math.random()*0.35) + peak, 0, 1);
+      const yy = h-28-v*(h-52);
+      if(x===42) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
+    }
+    ctx.stroke();
+    drawLabels(ctx,w,h);
+    return;
+  }
+
+  const mags=applyDisplayLevels(dftMag(y));
+  ctx.strokeStyle="#2e95ff"; ctx.lineWidth=2; ctx.beginPath();
+  for(let i=1;i<mags.length;i++){
+    const x=42+i*(w-58)/(mags.length-1);
+    const yy=h-28-mags[i]*(h-52);
+    if(i===1) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
+  }
+  ctx.stroke();
+  drawLabels(ctx,w,h);
+}
+
+function color(v){
+  v = clamp(v,0,1);
+  const scheme = ($("colorscheme") ? $("colorscheme").value : "Blue").toLowerCase();
+  let r, g, b;
+
+  if(scheme === "fire"){
+    // Black/red/orange/yellow/white heatmap. Good for realistic SDR-style waterfalls.
+    if(v < 0.22){ const x=v/0.22; r=Math.floor(20+x*80); g=Math.floor(x*8); b=0; }
+    else if(v < 0.52){ const x=(v-0.22)/0.30; r=Math.floor(100+x*155); g=Math.floor(8+x*70); b=0; }
+    else if(v < 0.78){ const x=(v-0.52)/0.26; r=255; g=Math.floor(78+x*150); b=Math.floor(x*30); }
+    else { const x=(v-0.78)/0.22; r=255; g=Math.floor(228+x*27); b=Math.floor(30+x*225); }
+  } else if(scheme === "classic"){
+    // Blue/green/yellow/red scale like many RF tools.
+    if(v < 0.20){ const x=v/0.20; r=Math.floor(4+x*20); g=Math.floor(8+x*35); b=Math.floor(45+x*120); }
+    else if(v < 0.45){ const x=(v-0.20)/0.25; r=0; g=Math.floor(43+x*175); b=Math.floor(165-x*105); }
+    else if(v < 0.70){ const x=(v-0.45)/0.25; r=Math.floor(20+x*235); g=220; b=Math.floor(60-x*55); }
+    else { const x=(v-0.70)/0.30; r=255; g=Math.floor(220-x*210); b=Math.floor(5+x*25); }
+  } else {
+    // Default blue/cyan analyzer palette.
+    if(v < 0.18){ const x = v / 0.18; r = 2; g = Math.floor(12 + x*24); b = Math.floor(55 + x*135); }
+    else if(v < 0.42){ const x = (v - 0.18) / 0.24; r = 0; g = Math.floor(40 + x*170); b = Math.floor(190 + x*55); }
+    else if(v < 0.62){ const x = (v - 0.42) / 0.20; r = Math.floor(x*70); g = 255; b = Math.floor(230 - x*180); }
+    else if(v < 0.82){ const x = (v - 0.62) / 0.20; r = Math.floor(70 + x*185); g = 255; b = Math.floor(50 - x*50); }
+    else { const x = (v - 0.82) / 0.18; r = 255; g = Math.floor(255 - x*235); b = Math.floor(x*35); }
+  }
+  return `rgb(${r},${g},${b})`;
+}
+
+function updateColourScheme(){
+  const scheme = ($("colorscheme") ? $("colorscheme").value : "Blue").toLowerCase();
+  let gradient;
+  if(scheme === "fire") gradient = "linear-gradient(to bottom,#ffffff,#fff15a,#ff8a00,#d21900,#3a0200,#080000)";
+  else if(scheme === "classic") gradient = "linear-gradient(to bottom,#ff1010,#ffd600,#15e661,#00a7ff,#071f9c,#02071f)";
+  else gradient = "linear-gradient(to bottom,#ff253f,#ff8d00,#ffff40,#38ff72,#21d0ff,#0b4aff,#031e98)";
+  document.documentElement.style.setProperty("--scale-gradient", gradient);
+}
+
+function waterfallSpeedRows(){
+  const speed = ($("wfspeed") ? $("wfspeed").value : "Medium").toLowerCase();
+  if(speed === "slow") return {rowH:2, rendersPerFrame:1, frameStep:1, skip:2};
+  if(speed === "fast") return {rowH:5, rendersPerFrame:2, frameStep:2, skip:1};
+  return {rowH:3, rendersPerFrame:1, frameStep:1, skip:1};
+}
+function drawWaterfall(y){
+  const c=$("waterfall"), ctx=c.getContext("2d"), w=c.width, h=c.height;
+  const rowH=waterfallSpeedRows().rowH;
+  const old=ctx.getImageData(0,0,w,h-rowH);
+  ctx.putImageData(old,0,rowH);
+  ctx.fillStyle="#030609";
+  ctx.fillRect(0,0,w,rowH);
+
+  const s = settings();
+  const kind = presetKind();
+  const lvl = levelFromRssi();
+
+  if(s.mod === "hopping"){
+    drawNoiseRow(ctx,w,rowH,lvl.noise);
+    const hop = getActiveHopBin(frame);
+    const view = waterfallView();
+    const freqOffsetKHz = (hop - 0.5) * s.span;
+    const x = waterfallXFromOffset(freqOffsetKHz, view, w);
+    const width = Math.max(4, Math.min(34, (s.bw / Math.max(1, view.visibleSpan)) * (w - 90)));
+    const intensity = clamp(lvl.noise + lvl.signal*0.75, 0, 1);
+    if(x >= 42-width && x <= w-48+width){
+      ctx.fillStyle = color(intensity);
+      ctx.fillRect(x - width/2, 0, width, rowH);
+      ctx.fillStyle = color(clamp(intensity * 1.15, 0, 1));
+      ctx.fillRect(x - Math.max(2,width/5), 0, Math.max(3,width/2.5), rowH);
+    }
+  } else if(s.mod === "4fsk"){
+    drawNoiseRow(ctx,w,rowH,lvl.noise);
+    const view = waterfallView();
+    const spacingKHz = Math.max(s.bw * 0.18, 0.5);
+    const symIndex = Math.floor(frame / Math.max(1, Math.round(18 / Math.max(1, s.sr/10)))) % symbols.length;
+    const tone = [-1.5, -0.5, 0.5, 1.5][symbols[symIndex] & 3] * spacingKHz;
+    const x = waterfallXFromOffset(tone, view, w);
+    const width = Math.max(3, Math.min(22, (spacingKHz * 0.16 / Math.max(1, view.visibleSpan)) * (w - 90)));
+    const intensity = clamp(lvl.noise + lvl.signal*0.85, 0, 1);
+    if(x >= 42-width && x <= w-48+width){
+      ctx.fillStyle = color(intensity);
+      ctx.fillRect(x - width/2, 0, width, rowH);
+      ctx.fillStyle = color(clamp(intensity * 1.18, 0, 1));
+      ctx.fillRect(x - Math.max(1,width/4), 0, Math.max(2,width/2), rowH);
+    }
+  } else if(kind){
+    drawNoiseRow(ctx,w,rowH,lvl.noise);
+    const usableW = w - 90;
+    const view = waterfallView();
+
+    if(kind === "pulseTrain"){
+      // Intermittent vertical pulse marks: not a continuous wide blob.
+      const period = currentPreset === "iff" ? 9 : 14;
+      const active = (frame % period) < 2;
+      if(active){
+        drawWaterfallBand(ctx,w,rowH,0,s.bw,view,clamp(lvl.noise + lvl.signal*0.75,0,1),5,80);
+      }
+    } else if(kind === "fastChirp"){
+      // Fast diagonal sweep across the occupied bandwidth.
+      const bwActual = Math.max(s.bw * 0.1, Math.min(s.bw, s.span * 0.9));
+      const sweepOffset = -bwActual/2 + ((frame % 80) / 79) * bwActual;
+      const sweepX = waterfallXFromOffset(sweepOffset, view, w);
+      const width = Math.max(4, (bwActual / Math.max(1, view.visibleSpan)) * usableW * 0.025);
+      if(sweepX >= 42-width && sweepX <= w-48+width){
+        ctx.fillStyle = color(clamp(lvl.noise + lvl.signal*0.75,0,1));
+        ctx.fillRect(sweepX-width/2,0,width,rowH);
+      }
+    } else if(kind === "slowSweep"){
+      // Slower HF radar-like slanted line.
+      const bwActual = Math.max(s.bw * 0.25, Math.min(s.bw, s.span * 0.95));
+      const sweepOffset = -bwActual/2 + ((frame % 180) / 179) * bwActual;
+      const sweepX = waterfallXFromOffset(sweepOffset, view, w);
+      const width = Math.max(3, (bwActual / Math.max(1, view.visibleSpan)) * usableW * 0.012);
+      if(sweepX >= 42-width && sweepX <= w-48+width){
+        ctx.fillStyle = color(clamp(lvl.noise + lvl.signal*0.75*0.9,0,1));
+        ctx.fillRect(sweepX-width/2,0,width,rowH);
+      }
+    } else if(kind === "blockOfdm"){
+      // Cellular/Wi-Fi style occupied block: wide, flat-ish, but rectangular.
+      const bwActual = Math.max(s.bw * 0.02, Math.min(s.bw, s.span * 0.95));
+      const leftOffset = -bwActual/2;
+      const rightOffset = bwActual/2;
+      for(let px=42; px<w-48; px+=4){
+        const u = (px - 42) / usableW;
+        const freqOffsetKHz = view.panKHz - view.visibleSpan/2 + u * view.visibleSpan;
+        if(freqOffsetKHz >= leftOffset && freqOffsetKHz <= rightOffset){
+          const v = clamp(lvl.noise + lvl.signal*0.75*(0.45 + Math.random()*0.25),0,1);
+          ctx.fillStyle = color(v);
+          ctx.fillRect(px,0,4,rowH);
+        }
+      }
+      // Add occasional centre/reference tones.
+      if(frame % 8 < 2){
+        drawWaterfallBand(ctx,w,rowH,0,view.visibleSpan*0.008,view,clamp(lvl.noise + lvl.signal*0.75*0.95,0,1),2,6);
+      }
+    } else if(kind === "cellCarrier"){
+      drawWaterfallBand(ctx,w,rowH,0,s.bw,view,clamp(lvl.noise + lvl.signal*0.75,0,1),4,45);
+    }
+  } else {
+    const mags=applyDisplayLevels(dftMag(y));
+    const view = waterfallView();
+    const usableW = w - 90;
+    for(let px=42; px<w-48; px++){
+      const u = (px - 42) / usableW;
+      const freqOffsetKHz = view.panKHz - view.visibleSpan/2 + u * view.visibleSpan;
+      const fullU = 0.5 + freqOffsetKHz / s.span;
+      const idx = Math.floor(fullU * (mags.length - 1));
+      if(idx >= 1 && idx < mags.length){
+        ctx.fillStyle=color(mags[idx]);
+        ctx.fillRect(px,0,1,rowH);
+      }
+    }
+  }
+
+  ctx.fillStyle="rgba(3,6,9,.78)";
+  ctx.fillRect(0,h-22,w,22);
+  drawWaterfallLabels(ctx,w,h);
+}
+
+function drawIQ(I,Q){
+  const c=$("iq"), ctx=c.getContext("2d"), w=c.width, h=c.height;
+  drawAxes(ctx,w,h);
+  ctx.strokeStyle="#26313d";
+  ctx.beginPath(); ctx.moveTo(w/2,12); ctx.lineTo(w/2,h-24); ctx.stroke();
+  ctx.fillStyle="#57ff5a";
+  for(let i=0;i<I.length;i+=5){
+    const x=w/2 + I[i]*(w*0.2);
+    const y=h/2 - Q[i]*(h*0.32);
+    ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill();
+  }
+}
+
+function approxOBW(){
+  const s=settings();
+  let khz;
+  if(s.mod === "carrier") khz = Math.max(1, s.rbw*0.5);
+  else if(s.mod === "am") khz = Math.max(s.bw, 2 * (s.sr/4));
+  else if(s.mod === "fm") khz = Math.max(s.bw, 2 * ((s.bw/6) + (s.sr/8)));
+  else if(s.mod === "fsk") khz = Math.max(s.bw, 2 * ((s.bw/5) + s.sr/2));
+  else if(s.mod === "4fsk") khz = Math.max(s.bw, 4 * (s.bw * 0.18) + s.sr);
+  else if(s.mod === "lora") khz = s.bw;
+  else if(s.mod === "cw") khz = Math.max(0.1, s.bw);
+  else if(s.mod === "pulse") khz = Math.max(s.bw, 100);
+  else if(s.mod === "chirp") khz = s.bw;
+  else if(s.mod === "hopping") khz = Math.max(s.bw, s.span * 0.7);
+  else if(s.mod === "ofdm") khz = s.bw;
+  else khz = Math.max(s.bw, s.sr * 1.2);
+  return fmtK(khz);
+}
+
+function updateLabels(){
+  const s=settings();
+  syncNumberBoxes(false);
+
+  const left=s.center-s.span/2000;
+  const right=s.center+s.span/2000;
+  $("freqRange").textContent = fmtFreq(left) + " – " + fmtFreq(right);
+  $("occupied").textContent = approxOBW();
+  $("snrReadout").textContent = (s.rssiDb - s.noiseDb).toFixed(0) + " dB";
+  if($("spectrumMeta")) $("spectrumMeta").textContent = "Span: " + fmtK(s.span) + "  •  RBW: " + Math.round((s.span*1000)/N) + " Hz";
+  const view = waterfallView();
+  if($("wfTopMeta")) $("wfTopMeta").textContent = "Zoom: " + view.zoom.toFixed(1) + "×  •  View: " + (settings().wffollow ? "following TX" : "manual") + "  •  Speed: " + settings().wfspeed + "  •  Offset: " + view.manualPanKHz.toFixed(1) + " kHz";
+  if($("infoMod")) $("infoMod").textContent = $("mod").options[$("mod").selectedIndex].text.replace(" / ASK","");
+  if($("infoSr")) $("infoSr").textContent = (s.sr >= 1000 ? (s.sr/1000).toFixed(2)+" ksym/s" : (s.sr/1).toFixed(s.sr<10?2:1)+" sym/s");
+  if($("infoDev")) $("infoDev").textContent = s.mod === "4fsk" ? "±" + (s.bw/2).toFixed(1) + " kHz" : "—";
+  if($("infoBw")) $("infoBw").textContent = "~" + fmtK(Number(approxOBW().replace(/[^0-9.]/g,'')) || s.bw);
+  if($("infoBits")) $("infoBits").textContent = s.mod === "4fsk" || s.mod === "qpsk" ? "2" : (s.mod === "carrier" ? "—" : "1");
+  if($("infoSnr")) $("infoSnr").textContent = (s.rssiDb - s.noiseDb).toFixed(0) + " dB";
+  if($("iqCaption")) $("iqCaption").textContent = s.mod === "4fsk" ? "4-FSK (ideal)" : "Baseband view";
+  const act = txActivity();
+  if($("wfTopMeta")) $("wfTopMeta").innerHTML += " &nbsp;•&nbsp; " + (act.active ? "TX active" : "TX idle");
+  updateSignalDescription();
+  updateWaterfallControls();
+}
+
+function setWaterfallZoom(z){
+  setControl("wfzoom", clamp(Number(z), 1, 32));
+  render();
+}
+
+function stepWaterfallPan(dir){
+  const current = val("wfpan");
+  const next = clamp(current + dir * 12.5, -50, 50);
+  setControl("wfpan", Math.round(next * 10) / 10);
+  render();
+}
+
+function centerWaterfallPan(){
+  setControl("wfpan", 0);
+  render();
+}
+
+function updateWaterfallControls(){
+  const v = waterfallView();
+  if($("wfZoomChip")) $("wfZoomChip").textContent = v.zoom.toFixed(v.zoom % 1 ? 1 : 0) + "× zoom";
+  if($("wfSpanChip")) $("wfSpanChip").textContent = fmtK(v.visibleSpan) + " shown";
+  if($("wfPanChip")) $("wfPanChip").textContent = settings().wffollow ? "following TX" : (Math.abs(v.panKHz) < 0.05 ? "centered" : (v.panKHz > 0 ? "+" : "") + fmtK(v.panKHz) + " pan");
+  if($("wfRangeText")) $("wfRangeText").textContent = fmtK(v.visibleSpan) + " visible";
+  if($("wfPanText")) $("wfPanText").textContent = settings().wffollow ? (Math.abs(v.manualPanKHz) < 0.05 ? "Following transmission" : "Following, " + (v.manualPanKHz > 0 ? "right " : "left ") + fmtK(Math.abs(v.manualPanKHz))) : (Math.abs(v.panKHz) < 0.05 ? "Centered" : (v.panKHz > 0 ? "Right " : "Left ") + fmtK(Math.abs(v.panKHz)));
+  document.querySelectorAll("#wfZoomButtons button").forEach(btn => {
+    const bz = Number(btn.dataset.zoom);
+    btn.classList.toggle("active", Math.abs(bz - v.zoom) < 0.05);
+  });
+}
+
+function clearWaterfall(){
+  const c=$("waterfall"), ctx=c.getContext("2d");
+  ctx.fillStyle="#030609";
+  ctx.fillRect(0,0,c.width,c.height);
+}
+
+function render(){
+  updateColourScheme();
+  updateLabels();
+  const s=generate(frame);
+  drawTime(s.y); drawFFT(s.y); drawWaterfall(s.y); drawIQ(s.I,s.Q);
+}
+
+function playLoop(){
+  if(!playing) return;
+  const speed = waterfallSpeedRows();
+  for(let i=0;i<speed.rendersPerFrame;i++){
+    frame += speed.frameStep;
+    if(settings().mod === "hopping" || presetKind() || frame % speed.skip === 0) render();
+  }
+  rafId=requestAnimationFrame(playLoop);
+}
+function setPlaying(state){
+  playing=state;
+  $("play").innerHTML=playing ? "▮▮&nbsp; Pause" : "▶&nbsp; Start";
+  if(playing){ if(rafId) cancelAnimationFrame(rafId); rafId=requestAnimationFrame(playLoop); }
+  else if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
+}
+
+
+function syncPair(base, keepPreset=false){
+  const slider = $(base);
+  const box = $(base + "Num");
+  if(!slider || !box) return;
+  const changed = () => {
+    if(!keepPreset){
+      $("preset").value = "custom";
+      currentPreset = "custom";
+      spectrumAvg=null;
+    }
+    render();
+  };
+  slider.addEventListener("input", () => {
+    box.value = slider.value;
+    changed();
+  });
+  box.addEventListener("input", () => {
+    const min = Number(slider.min), max = Number(slider.max);
+    let v = Number(box.value);
+    if(Number.isFinite(v)){
+      v = clamp(v, min, max);
+      slider.value = v;
+      changed();
+    }
+  });
+}
+
+function syncNumberBoxes(force=true){
+  ["center","span","sr","hoprate","wfzoom","wfpan","bw","rbw","vbw","noise","rssi"].forEach(base => {
+    const slider=$(base), box=$(base+"Num");
+    if(slider && box && (force || document.activeElement !== box)) box.value = slider.value;
+  });
+}
+
+
+const modHelpText = {
+  carrier:"Unmodulated carrier; useful as a reference tone or oscillator leak.", am:"Amplitude modulation; information is carried by signal strength changes.", fm:"Frequency modulation; information is carried by smooth frequency deviation.", ook:"On-off keying / ASK; carrier switches or changes amplitude for data.", fsk:"Two discrete frequency levels; one bit per symbol.", "4fsk":"Four discrete frequency levels; two bits per symbol.", bpsk:"Two phase states, normally 180° apart.", qpsk:"Four phase states; two bits per symbol.", lora:"Chirp spread spectrum; symbols appear as sweeping frequency ramps.", gmsk:"Gaussian-filtered FSK with smoother transitions and compact bandwidth.", cw:"Continuous-wave Morse; narrow carrier keyed on and off.", pulse:"Short high-power bursts with quiet gaps between pulses.", chirp:"Swept-frequency pulse; common in FMCW and some radar-like signals.", hopping:"One carrier jumping between channels according to a hop sequence.", ofdm:"Wide multi-carrier data block made of many close subcarriers."
+};
+
+const signalDetails = {
+  custom:{title:"Custom signal",cat:"custom",badge:"Custom",desc:"Manual signal profile. Adjust the controls to model the signal you want to study.",users:"Training / custom examples",bandwidth:"Variable",rate:"Variable",spectrum:"Depends on selected modulation.",waterfall:"Depends on selected modulation.",detect:"★★☆☆☆",encrypt:"N/A"},
+  dmr:{title:"DMR / MotoTRBO voice",cat:"voice",badge:"Voice",desc:"Commercial digital land-mobile radio using 4FSK in a 12.5 kHz channel with two-slot TDMA.",users:"Business, utilities, security, amateur radio",bandwidth:"12.5 kHz",rate:"4.8 ksym/s",spectrum:"Narrow digital voice peak with shaped shoulders.",waterfall:"Continuous narrow trace with rapid 4-level frequency transitions.",detect:"★★☆☆☆",encrypt:"Optional"},
+  p25p1:{title:"P25 Phase 1 voice",cat:"voice",badge:"Voice",desc:"Public-safety digital voice channel commonly using C4FM, visually similar to 4-level FSK.",users:"Police, fire, emergency services, government radio",bandwidth:"12.5 kHz",rate:"4.8 ksym/s",spectrum:"Narrow constant-width digital voice signal.",waterfall:"Steady carrier-like strip with 4-level symbol texture.",detect:"★★☆☆☆",encrypt:"Optional"},
+  p25p2:{title:"P25 Phase 2 voice",cat:"voice",badge:"Voice",desc:"Public-safety TDMA digital voice. The real waveform is more complex than this simplified training view.",users:"Public safety trunked radio networks",bandwidth:"12.5 kHz channel",rate:"Approx. 6 ksym/s view",spectrum:"Narrow digital channel with constant occupancy.",waterfall:"Steady narrow strip with time-slot structure.",detect:"★★★☆☆",encrypt:"Optional"},
+  tetra:{title:"TETRA voice",cat:"voice",badge:"Voice",desc:"Trunked digital radio standard using π/4-DQPSK-style modulation in 25 kHz channels.",users:"Public safety, transport, utilities, industry",bandwidth:"25 kHz",rate:"18 ksym/s",spectrum:"Wider narrowband digital voice channel.",waterfall:"Continuous rectangular strip with dense symbol texture.",detect:"★★★☆☆",encrypt:"Optional / common"},
+  nxdn:{title:"NXDN narrow voice",cat:"voice",badge:"Voice",desc:"Very narrow digital land-mobile radio using 4FSK-like signaling.",users:"Business, rail, utilities, private radio",bandwidth:"6.25 or 12.5 kHz",rate:"2.4–4.8 ksym/s",spectrum:"Very narrow digital peak.",waterfall:"Thin continuous strip with discrete FSK texture.",detect:"★★★☆☆",encrypt:"Optional"},
+  aprs:{title:"APRS packet",cat:"data",badge:"Data",desc:"Amateur packet-radio data usually carried as AFSK over narrow FM.",users:"Amateur radio tracking, weather, telemetry",bandwidth:"About 12–15 kHz",rate:"1200 baud typical",spectrum:"Narrow FM channel with two audio tones inside.",waterfall:"Short bursts or packets on a narrow channel.",detect:"★★☆☆☆",encrypt:"None"},
+  ais:{title:"AIS marine data",cat:"data",badge:"Data",desc:"Automatic Identification System packets from ships using narrow GMSK channels around 162 MHz.",users:"Ships, coastal receivers, maritime monitoring",bandwidth:"25 kHz channel",rate:"9.6 kbit/s",spectrum:"Narrow data burst channel.",waterfall:"Short repeating bursts from different vessels.",detect:"★★☆☆☆",encrypt:"None"},
+  lora125:{title:"LoRa 125 kHz data",cat:"data",badge:"Data",desc:"Low-power chirp spread-spectrum telemetry designed for long range and low data rates.",users:"IoT sensors, telemetry, smart meters, agriculture",bandwidth:"125 kHz",rate:"Variable spreading-factor rate",spectrum:"Wide low-power spread signal across the selected bandwidth.",waterfall:"Diagonal chirps sweeping across the channel.",detect:"★★★★☆",encrypt:"Protocol-level AES possible"},
+  adsb:{title:"ADS-B 1090 MHz data",cat:"navigation",badge:"Navigation",desc:"Aircraft position broadcast using short pulse-position messages at 1090 MHz.",users:"Aircraft transponders, aviation receivers",bandwidth:"Roughly 1 MHz visual occupancy",rate:"1 Mbit/s pulse stream",spectrum:"Broad pulse energy around 1090 MHz.",waterfall:"Very short bright horizontal/vertical burst marks.",detect:"★☆☆☆☆",encrypt:"None"},
+  fmwide:{title:"Wideband FM broadcast",cat:"broadcast",badge:"Broadcast",desc:"Commercial broadcast FM with wide deviation, stereo subcarrier, and possible RDS data.",users:"FM radio stations",bandwidth:"~180–200 kHz",rate:"Audio program",spectrum:"Wide rounded FM broadcast shape.",waterfall:"Strong continuous wide signal with audio texture.",detect:"★☆☆☆☆",encrypt:"None"},
+  amnarrow:{title:"Narrow AM voice",cat:"voice",badge:"Voice",desc:"Amplitude-modulated voice channel such as airband-style communications.",users:"Aviation voice, legacy comms, HF voice examples",bandwidth:"6–10 kHz",rate:"Voice audio",spectrum:"Carrier with symmetrical sidebands.",waterfall:"Thin central carrier with changing sideband texture.",detect:"★☆☆☆☆",encrypt:"None"},
+  vhfrepeater:{title:"VHF/UHF repeater voice",cat:"voice",badge:"Voice",desc:"Analog FM repeater channel with voice audio on a narrowband FM carrier.",users:"Amateur radio, business radio, local repeaters",bandwidth:"12.5–25 kHz",rate:"Voice audio",spectrum:"Narrow FM hump around the carrier.",waterfall:"Continuous signal during transmission, idle between users.",detect:"★☆☆☆☆",encrypt:"Usually none"},
+  cwslow:{title:"CW Morse slow",cat:"data",badge:"Data",desc:"Slow Morse code made from a very narrow carrier switched on and off.",users:"Amateur radio, beacons, training",bandwidth:"Sub-1 kHz",rate:"Slow WPM",spectrum:"Extremely narrow line.",waterfall:"Thin line appearing and disappearing as Morse characters.",detect:"★★☆☆☆",encrypt:"None"},
+  cwfast:{title:"CW Morse fast",cat:"data",badge:"Data",desc:"Faster Morse code with the same narrow carrier but quicker keying transitions.",users:"Amateur radio, contests, beacons",bandwidth:"Sub-1 kHz to ~1 kHz",rate:"Faster WPM",spectrum:"Very narrow line with slight keying sidebands.",waterfall:"Rapid dashed line segments.",detect:"★★☆☆☆",encrypt:"None"},
+  rtty:{title:"RTTY / 2-tone FSK",cat:"data",badge:"Data",desc:"Classic teletype data using two frequency tones, often seen on HF.",users:"Amateur radio, legacy data, telemetry examples",bandwidth:"~170–850 Hz shift plus filtering",rate:"45–300 baud typical",spectrum:"Two close peaks or a narrow dual-tone shape.",waterfall:"Carrier jumps between two nearby frequencies.",detect:"★★☆☆☆",encrypt:"None"},
+  pager:{title:"POCSAG pager",cat:"data",badge:"Data",desc:"Paging data channel using FSK-style bursts for one-way messages.",users:"Legacy pagers, alerting networks",bandwidth:"12.5–25 kHz",rate:"512/1200/2400 baud common",spectrum:"Narrow FSK data peak.",waterfall:"Bursty narrow signal with dense digital texture.",detect:"★★☆☆☆",encrypt:"Usually none / system dependent"},
+  acars:{title:"ACARS VHF data",cat:"data",badge:"Data",desc:"Aircraft text and telemetry messages sent as short VHF data bursts.",users:"Aircraft, airline operations, ground stations",bandwidth:"~8–12 kHz",rate:"2400 bps",spectrum:"Narrow data burst inside an AM/VHF channel.",waterfall:"Short bursts separated by quiet gaps.",detect:"★★☆☆☆",encrypt:"Usually none"},
+  meteor:{title:"Meteor burst packet",cat:"data",badge:"Data",desc:"Packet signal intended to exploit short-lived meteor ionization paths.",users:"Amateur radio experiments, specialist telemetry",bandwidth:"A few kHz",rate:"Low packet rate",spectrum:"Weak narrow FSK-like signal.",waterfall:"Brief bursts that appear suddenly and fade.",detect:"★★★★☆",encrypt:"None / application dependent"},
+  wifi24:{title:"Wi‑Fi / drone video 2.4 GHz",cat:"data",badge:"Data",desc:"Wideband OFDM data similar to Wi‑Fi video/control traffic in the 2.4 GHz ISM band.",users:"Routers, phones, laptops, some drone links",bandwidth:"20 MHz typical",rate:"Variable OFDM MCS",spectrum:"Wide flat-topped occupied block.",waterfall:"Rectangular blocks or bursts across a wide channel.",detect:"★☆☆☆☆",encrypt:"WPA/WPA2/WPA3 or proprietary"},
+  dronectrl:{title:"Drone control link",cat:"data",badge:"Data",desc:"Simplified hopping control-link view; real systems vary heavily by manufacturer.",users:"Consumer/industrial drones, RC control links",bandwidth:"Hundreds of kHz to several MHz",rate:"Packet / hop based",spectrum:"One active channel at a time inside a wider band.",waterfall:"Narrow signal hopping between frequencies.",detect:"★★★★☆",encrypt:"Often proprietary"},
+  dronerid:{title:"Remote ID / drone beacon",cat:"data",badge:"Data",desc:"Drone identification beacon usually carried over Wi‑Fi or Bluetooth-style broadcasts.",users:"Drones broadcasting ID/location information",bandwidth:"Wi‑Fi/BLE style channels",rate:"Short beacon packets",spectrum:"Short OFDM/BLE-like burst energy.",waterfall:"Intermittent beacon bursts rather than continuous traffic.",detect:"★★☆☆☆",encrypt:"Broadcast identity data; implementation varies"},
+  radarpulse:{title:"Short pulse radar",cat:"radar",badge:"Radar",desc:"Radar-like short RF pulses with low duty cycle and high peak intensity.",users:"Surveillance radar, range finding, training example",bandwidth:"Pulse-dependent; wide for short pulses",rate:"Pulse repetition based",spectrum:"Broad pulse energy centered on the carrier.",waterfall:"Bright brief pulse marks with quiet gaps.",detect:"★★☆☆☆",encrypt:"N/A"},
+  radarchirp:{title:"FMCW / chirp radar",cat:"radar",badge:"Radar",desc:"Frequency-modulated continuous-wave radar sweeping across bandwidth to measure range/velocity.",users:"Automotive, altimeters, sensors, radar training",bandwidth:"MHz to GHz in real systems",rate:"Chirp repetition based",spectrum:"Broad occupied sweep region.",waterfall:"Diagonal sweep lines across the occupied bandwidth.",detect:"★★★☆☆",encrypt:"N/A"},
+  othr:{title:"HF OTH radar-like sweep",cat:"radar",badge:"Radar",desc:"Over-the-horizon radar-style HF sweep occupying a wide slice of spectrum.",users:"Long-range radar systems, HF monitoring examples",bandwidth:"Hundreds of kHz to MHz",rate:"Slow sweep / pulse pattern",spectrum:"Wide, rough, sweeping block.",waterfall:"Slanted sweeping lines across HF spectrum.",detect:"★★☆☆☆",encrypt:"N/A"},
+  iff:{title:"IFF / transponder-style pulses",cat:"military",badge:"Military",desc:"Transponder-style pulse replies similar in appearance to aviation/IFF pulse traffic.",users:"Aircraft transponders, identification systems",bandwidth:"Pulse-dependent; often wide",rate:"Interrogation/reply pulse timing",spectrum:"Sharp pulse energy around the channel.",waterfall:"Short bright pulse groups.",detect:"★★☆☆☆",encrypt:"System dependent"},
+  weather:{title:"Weather radar-like sweep",cat:"radar",badge:"Radar",desc:"Weather-radar style swept or pulsed signal used here as a visual training approximation.",users:"Weather radar systems",bandwidth:"MHz-scale in real systems",rate:"Sweep/pulse based",spectrum:"Wide sweep-like occupied region.",waterfall:"Repeating chirp/sweep traces.",detect:"★★☆☆☆",encrypt:"N/A"},
+  lte10:{title:"LTE 10 MHz downlink",cat:"cellular",badge:"Cellular",desc:"Cellular OFDM downlink carrying multiple users and reference signals.",users:"Mobile network base stations",bandwidth:"10 MHz",rate:"OFDM resource blocks",spectrum:"Flat rectangular LTE channel.",waterfall:"Wide continuous block with fine subcarrier texture.",detect:"★☆☆☆☆",encrypt:"Standard cellular encryption"},
+  lte20:{title:"LTE 20 MHz downlink",cat:"cellular",badge:"Cellular",desc:"Wider LTE downlink allocation with OFDM carriers across a 20 MHz channel.",users:"Mobile network base stations",bandwidth:"20 MHz",rate:"OFDM resource blocks",spectrum:"Wide flat-topped cellular block.",waterfall:"Continuous rectangular occupancy with reference tones.",detect:"★☆☆☆☆",encrypt:"Standard cellular encryption"},
+  nr20:{title:"5G NR 20 MHz",cat:"cellular",badge:"Cellular",desc:"5G New Radio OFDM channel shown as a simplified 20 MHz allocation.",users:"5G base stations and user equipment",bandwidth:"20 MHz",rate:"OFDM numerology dependent",spectrum:"Rectangular OFDM block.",waterfall:"Wide dense block, sometimes bursty depending on traffic.",detect:"★☆☆☆☆",encrypt:"Standard cellular encryption"},
+  nr100:{title:"5G NR 100 MHz-style",cat:"cellular",badge:"Cellular",desc:"Large 5G NR-style OFDM allocation, typical of high-capacity mid-band/mmWave examples.",users:"5G base stations and user equipment",bandwidth:"100 MHz style",rate:"OFDM numerology dependent",spectrum:"Very wide flat occupied block.",waterfall:"Large rectangular wideband channel.",detect:"★☆☆☆☆",encrypt:"Standard cellular encryption"},
+  gsm:{title:"GSM carrier",cat:"cellular",badge:"Cellular",desc:"Legacy cellular carrier using GMSK modulation in a 200 kHz channel.",users:"2G mobile networks, legacy M2M",bandwidth:"200 kHz",rate:"270.833 ksym/s real-world",spectrum:"Narrow cellular carrier inside a 200 kHz channel.",waterfall:"Continuous or slotted carrier with burst timing.",detect:"★☆☆☆☆",encrypt:"Standard GSM encryption varies"},
+  edge:{title:"EDGE / GMSK-style cellular",cat:"cellular",badge:"Cellular",desc:"2G/EDGE-style cellular channel represented with compact continuous modulation.",users:"Legacy cellular data networks",bandwidth:"200 kHz",rate:"High symbol-rate cellular burst",spectrum:"200 kHz cellular channel shape.",waterfall:"Slotted bursts inside a narrow cellular channel.",detect:"★☆☆☆☆",encrypt:"Standard cellular encryption varies"},
+  celluplink:{title:"Cellular uplink burst",cat:"cellular",badge:"Cellular",desc:"Simplified user-equipment uplink burst, often weaker and more intermittent than downlink.",users:"Phones, modems, IoT user equipment",bandwidth:"Variable, often narrower allocation",rate:"Scheduled burst traffic",spectrum:"Lower-power OFDM-like burst block.",waterfall:"Intermittent blocks rather than a constant tower downlink.",detect:"★★★☆☆",encrypt:"Standard cellular encryption"},
+  nb_iot:{title:"NB-IoT narrow carrier",cat:"cellular",badge:"Cellular",desc:"Narrowband cellular IoT carrier designed for low-power devices and deep coverage.",users:"Smart meters, sensors, industrial IoT",bandwidth:"180 kHz",rate:"Low-rate cellular IoT",spectrum:"Small narrow OFDM-like carrier.",waterfall:"Thin persistent or bursty narrow cellular block.",detect:"★★★☆☆",encrypt:"Standard cellular encryption"}
+};
+
+function detailForCurrentSelection(){
+  const preset = $("preset").value;
+  if(signalDetails[preset]) return signalDetails[preset];
+  const mod = $("mod").value;
+  const modName = $("mod").options[$("mod").selectedIndex].text;
+  return {title:modName,cat:"custom",badge:"Mod",desc:modHelpText[mod] || "Manual modulation view.",users:"Depends on the selected scenario",bandwidth:"Variable",rate:"Variable",spectrum:"Generated from the selected modulation and bandwidth.",waterfall:"Generated from the selected modulation over time.",detect:"★★☆☆☆",encrypt:"N/A"};
+}
+
+function updateSignalDescription(){
+  const d = detailForCurrentSelection();
+  if($("modHelp")) $("modHelp").textContent = modHelpText[$("mod").value] || d.desc;
+  if($("detailTitle")) $("detailTitle").textContent = d.title;
+  if($("detailBadge")){ $("detailBadge").textContent = d.badge; $("detailBadge").className = "badge " + d.cat; }
+  [["detailDesc","desc"],["detailUsers","users"],["detailBandwidth","bandwidth"],["detailRate","rate"],["detailSpectrum","spectrum"],["detailWaterfall","waterfall"],["detailDetect","detect"],["detailEncrypt","encrypt"]].forEach(([id,key])=>{ if($(id)) $(id).textContent = d[key]; });
+  if($("sigidLink")) $("sigidLink").textContent = "↗ Open SigIDWiki: " + sigidSearchTerm();
+}
+
+
+const sigidTerms = {
+  custom:"Signal identification", dmr:"DMR", p25p1:"P25", p25p2:"P25 Phase II", tetra:"TETRA", nxdn:"NXDN",
+  aprs:"APRS", ais:"AIS", lora125:"LoRa", adsb:"ADS-B", fmwide:"Wideband FM", amnarrow:"AM", vhfrepeater:"Narrowband FM",
+  cwslow:"Morse Code", cwfast:"Morse Code", rtty:"RTTY", pager:"POCSAG", acars:"ACARS", meteor:"Meteor scatter",
+  wifi24:"WiFi", dronectrl:"Frequency hopping spread spectrum", dronerid:"Drone Remote ID", radarpulse:"Radar", radarchirp:"FMCW Radar", othr:"Over-the-horizon radar", iff:"IFF", weather:"Weather radar",
+  lte10:"LTE", lte20:"LTE", nr20:"5G NR", nr100:"5G NR", gsm:"GSM", edge:"EDGE", celluplink:"LTE uplink", nb_iot:"NB-IoT"
+};
+function sigidSearchTerm(){
+  const preset = $("preset").value;
+  if(sigidTerms[preset]) return sigidTerms[preset];
+  const mod = $("mod").value;
+  const names = {carrier:"Carrier",am:"AM",fm:"FM",ook:"OOK",fsk:"FSK","4fsk":"4FSK",bpsk:"BPSK",qpsk:"QPSK",lora:"LoRa",gmsk:"GMSK",cw:"Morse Code",pulse:"Radar",chirp:"Chirp",hopping:"Frequency hopping",ofdm:"OFDM"};
+  return names[mod] || "Signal identification";
+}
+function openSigIDWiki(){
+  const url = "https://www.sigidwiki.com/wiki/Special:Search?search=" + encodeURIComponent(sigidSearchTerm());
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+const presets = {
+  dmr:     {traffic:"voice", mod:"4fsk",  center:450,  span:100,  sr:9.6,  bw:12.5, rbw:4,  vbw:30, noise:-107, rssi:-82},
+  p25p1:   {traffic:"voice", mod:"4fsk",  center:450,  span:100,  sr:9.6,  bw:12.5, rbw:4,  vbw:30, noise:-107, rssi:-84},
+  p25p2:   {traffic:"voice", mod:"hpsk", center:450,  span:100,  sr:6,    bw:12.5, rbw:4,  vbw:35, noise:-107, rssi:-86},
+  tetra:   {traffic:"voice", mod:"qpsk", center:420,  span:100,  sr:18,   bw:25,   rbw:5,  vbw:35, noise:-106, rssi:-82},
+  nxdn:    {traffic:"voice", mod:"4fsk",  center:460,  span:50,   sr:4.8,  bw:6.25, rbw:3,  vbw:35, noise:-108, rssi:-88},
+  aprs:    {traffic:"data",  mod:"fm",   center:144.39, span:50, sr:1.2,  bw:15,   rbw:3,  vbw:25, noise:-110, rssi:-92},
+  ais:     {traffic:"data",  mod:"gmsk", center:162.025, span:50, sr:9.6, bw:25,   rbw:4,  vbw:30, noise:-109, rssi:-91},
+  lora125: {traffic:"data",  mod:"lora", center:915,  span:500,  sr:10,   bw:125,  rbw:8,  vbw:25, noise:-115, rssi:-101},
+  adsb:    {traffic:"data",  mod:"ook",  center:1090, span:5000, sr:100,  bw:1000, rbw:18, vbw:20, noise:-112, rssi:-94},
+  fmwide:  {traffic:"voice", mod:"fm",   center:100.7, span:500, sr:40,   bw:180,  rbw:10, vbw:40, noise:-100, rssi:-68},
+  amnarrow:{traffic:"voice", mod:"am",   center:118,  span:50,   sr:3,    bw:8.33, rbw:3,  vbw:40, noise:-107, rssi:-82},
+  vhfrepeater:{traffic:"voice", mod:"fm", center:146.7, span:50, sr:3, bw:12.5, rbw:3, vbw:35, noise:-107, rssi:-78},
+  cwslow: {traffic:"data", mod:"cw", center:7.035, span:5, sr:0.8, bw:0.5, rbw:1, vbw:20, noise:-118, rssi:-108},
+  cwfast: {traffic:"data", mod:"cw", center:14.05, span:10, sr:2.5, bw:0.8, rbw:1, vbw:20, noise:-116, rssi:-105},
+  rtty: {traffic:"data", mod:"fsk", center:14.085, span:10, sr:0.17, bw:0.85, rbw:1, vbw:25, noise:-115, rssi:-103},
+  pager: {traffic:"data", mod:"4fsk", center:152.48, span:50, sr:2.4, bw:12.5, rbw:3, vbw:30, noise:-106, rssi:-78},
+  acars: {traffic:"data", mod:"fm", center:131.55, span:25, sr:2.4, bw:8, rbw:2, vbw:25, noise:-110, rssi:-94},
+  meteor: {traffic:"data", mod:"fsk", center:50.26, span:25, sr:1.2, bw:5, rbw:2, vbw:20, noise:-116, rssi:-106},
+  wifi24: {traffic:"data", mod:"ofdm", center:2437, span:5000, sr:100, bw:20000, rbw:35, vbw:15, noise:-96, rssi:-72},
+  dronectrl: {traffic:"data", mod:"hopping", center:2405, span:5000, sr:80, hoprate:18, bw:4500, rbw:10, vbw:5, noise:-100, rssi:-78},
+  dronerid: {traffic:"data", mod:"ofdm", center:2422, span:5000, sr:80, bw:20000, rbw:35, vbw:15, noise:-102, rssi:-84},
+  radarpulse: {traffic:"data", mod:"pulse", center:1300, span:5000, sr:100, hoprate:8, bw:1000, rbw:20, vbw:5, noise:-112, rssi:-92},
+  radarchirp: {traffic:"data", mod:"chirp", center:5800, span:5000, sr:100, hoprate:6, bw:4000, rbw:25, vbw:5, noise:-108, rssi:-86},
+  othr: {traffic:"data", mod:"chirp", center:12, span:5000, sr:30, bw:2500, rbw:20, vbw:10, noise:-112, rssi:-94},
+  iff: {traffic:"data", mod:"pulse", center:1090, span:5000, sr:100, bw:2000, rbw:25, vbw:5, noise:-110, rssi:-90},
+  weather: {traffic:"data", mod:"chirp", center:2500, span:5000, sr:100, bw:3000, rbw:30, vbw:8, noise:-108, rssi:-88},
+  lte10: {traffic:"data", mod:"ofdm", center:751, span:15000, sr:100, bw:10000, rbw:35, vbw:15, noise:-104, rssi:-82},
+  lte20: {traffic:"data", mod:"ofdm", center:1840, span:25000, sr:100, bw:20000, rbw:40, vbw:12, noise:-104, rssi:-78},
+  nr20: {traffic:"data", mod:"ofdm", center:3500, span:25000, sr:100, bw:20000, rbw:40, vbw:12, noise:-105, rssi:-82},
+  nr100: {traffic:"data", mod:"ofdm", center:3500, span:100000, sr:100, bw:100000, rbw:50, vbw:10, noise:-106, rssi:-86},
+  gsm: {traffic:"voice", mod:"gmsk", center:935, span:1000, sr:100, bw:200, rbw:12, vbw:20, noise:-106, rssi:-80},
+  edge: {traffic:"data", mod:"gmsk", center:947.4, span:1000, sr:100, bw:200, rbw:12, vbw:20, noise:-106, rssi:-84},
+  celluplink: {traffic:"data", mod:"ofdm", center:1735, span:10000, sr:80, bw:5000, rbw:28, vbw:18, noise:-112, rssi:-98},
+  nb_iot: {traffic:"data", mod:"ofdm", center:780, span:1000, sr:20, bw:180, rbw:8, vbw:20, noise:-116, rssi:-106}
+};
+
+function setControl(id, value){
+  const slider=$(id), box=$(id+"Num");
+  if(slider) slider.value = value;
+  if(box) box.value = value;
+}
+
+function applyPreset(name){
+  if(!presets[name]) return;
+  currentPreset = name;
+  const p = presets[name];
+  $("traffic").value = p.traffic;
+  $("mod").value = p.mod === "hpsk" ? "qpsk" : p.mod;
+  ["center","span","sr","hoprate","bw","rbw","vbw","noise","rssi"].forEach(k => setControl(k, p[k]));
+  setControl("wfzoom", 1);
+  setControl("wfpan", 0);
+  if($("wffollow")) $("wffollow").checked = true;
+  spectrumAvg=null;
+  clearWaterfall();
+  render();
+}
+
+function applyTrafficDefaults(){
+  const t = $("traffic").value;
+  if($("preset").value !== "custom") return;
+  if(t === "voice"){
+    setControl("sr", 9.6);
+    setControl("bw", Math.min(val("span"), 12.5));
+    setControl("rssi", -84);
+    setControl("hoprate", 8);
+    if($("mod").value === "lora" || $("mod").value === "ook") $("mod").value = "fsk";
+  } else {
+    setControl("sr", 50);
+    setControl("bw", Math.min(val("span"), 125));
+    setControl("rssi", -92);
+    setControl("hoprate", 12);
+    if($("mod").value === "am") $("mod").value = "fsk";
+  }
+  spectrumAvg=null;
+  render();
+}
+
+
+
+function initCollapsibles(){
+  document.querySelectorAll(".collapsible").forEach(section => {
+    const button = section.querySelector(".section-toggle");
+    const body = section.querySelector(".card-body");
+    if(!button || !body) return;
+
+    const setState = (collapsed) => {
+      section.classList.toggle("collapsed", collapsed);
+      button.setAttribute("aria-expanded", String(!collapsed));
+      body.hidden = collapsed;
+    };
+
+    setState(section.classList.contains("collapsed"));
+    button.addEventListener("click", () => {
+      const collapsed = !section.classList.contains("collapsed");
+      setState(collapsed);
+    });
+  });
+}
+
+["center","span","sr","hoprate","bw","rbw","vbw","noise","rssi"].forEach(base => syncPair(base));
+syncPair("wfzoom", true);
+syncPair("wfpan", true);
+if($("wffollow")) $("wffollow").addEventListener("change", () => { clearWaterfall(); render(); });
+if($("wfspeed")) $("wfspeed").addEventListener("input", () => { clearWaterfall(); render(); });
+if($("colorscheme")) $("colorscheme").addEventListener("input", () => { updateColourScheme(); clearWaterfall(); render(); });
+["mod"].forEach(id => $(id).addEventListener("input", () => { $("preset").value="custom"; currentPreset="custom"; spectrumAvg=null; render(); }));
+$("preset").addEventListener("input", () => applyPreset($("preset").value));
+$("traffic").addEventListener("input", applyTrafficDefaults);
+$("random").addEventListener("click", () => { symbols=Array.from({length:512}, () => Math.floor(Math.random()*4)); spectrumAvg=null; render(); });
+document.querySelectorAll("#wfZoomButtons button").forEach(btn => btn.addEventListener("click", () => setWaterfallZoom(btn.dataset.zoom)));
+$("wfPanLeft").addEventListener("click", () => stepWaterfallPan(-1));
+$("wfPanCenter").addEventListener("click", centerWaterfallPan);
+$("wfPanRight").addEventListener("click", () => stepWaterfallPan(1));
+$("play").addEventListener("click", () => setPlaying(!playing));
+$("clearwf").addEventListener("click", () => { clearWaterfall(); spectrumAvg=null; render(); });
+if($("sigidLink")) $("sigidLink").addEventListener("click", openSigIDWiki);
+initCollapsibles();
+
+syncNumberBoxes(true);
+setControl("wfzoom",1);
+setControl("sr",100);
+setControl("bw",25);
+setControl("rssi",-76);
+setControl("noise",-105);
+clearWaterfall();
+render();
+setPlaying(true);
+</script>
+
+</body>
+</html>
