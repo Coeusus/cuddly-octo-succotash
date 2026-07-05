@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Signal Hunt</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#06101c;--panel:#0e1b2c;--line:#24405f;--text:#f8fafc;--muted:#aebbd0;--blue:#38bdf8;--green:#67ff72;--red:#ff4460;--yellow:#facc15}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% -10%,#16314f 0,#081422 38%,#040a12 100%);color:var(--text);font-family:Inter,Arial,sans-serif}
+.app{max-width:1180px;margin:0 auto;padding:12px;padding-bottom:280px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.brand{font-size:26px;font-weight:900}
+.badge{font-size:13px;border:1px solid #31577d;background:#102947;color:#bde2ff;border-radius:999px;padding:4px 9px;margin-left:8px}
+a{color:#9fd8ff;text-decoration:none}
+button,select{background:linear-gradient(#15243a,#0e1828);border:1px solid #28415f;color:#eef7ff;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}
+button:hover{border-color:#38bdf8}.primary{border-color:#1780ff;color:#61b8ff}
+.panel{background:linear-gradient(145deg,rgba(16,30,47,.96),rgba(9,20,34,.99));border:1px solid var(--line);border-radius:16px;box-shadow:0 16px 30px rgba(0,0,0,.22)}
+.top{display:grid;grid-template-columns:1.2fr .8fr;gap:10px;margin-bottom:10px}
+.mission{padding:14px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.mission h1{margin:0 0 7px;font-size:22px}.mission p{margin:0;color:var(--muted);line-height:1.45}
+.target{background:#071a2e;border:1px solid #1e4d79;border-radius:12px;padding:11px 13px;min-width:250px}
+.target small{display:block;color:#9fb1c8;font-weight:800}.target b{display:block;color:var(--yellow);font-size:20px;margin-top:4px}
+.stats{padding:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat{background:#07182a;border:1px solid #1b3855;border-radius:12px;padding:10px;text-align:center}
+.stat small{display:block;color:var(--muted);font-weight:800;text-transform:uppercase;font-size:11px}.stat b{display:block;font-size:22px;margin-top:3px}
+.controls{padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.controls label{font-weight:800;color:var(--muted);margin-right:6px}
+.game{padding:12px}.canvas-wrap{position:relative;background:#03070d;border:1px solid #20354f;border-radius:14px;overflow:hidden;touch-action:manipulation}
+canvas{display:block;width:100%;height:auto;background:#03070d}
+.feedback{min-height:30px;margin-top:10px;font-weight:900;font-size:19px}.good{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--yellow)}
+.hint{color:#aebbd0;line-height:1.45}
+.minirow{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:10px}
+.card{background:#07182a;border:1px solid #1b3855;border-radius:12px;padding:10px}.card b{display:block;margin-bottom:4px}.card p{margin:0;color:#aebbd0;font-size:13px;line-height:1.35}
+.count{color:#9fd8ff;font-weight:900}
+.bottom-spacer{height:45vh;min-height:280px}
+@media(max-width:850px){.app{padding:8px}.top{grid-template-columns:1fr}.mission{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.brand{font-size:22px}.controls>div,button,select{width:100%}.game{padding:8px}.feedback{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand">📡 Signal Hunt <span class="badge">v2.0</span></div><a href="index.html">← Back to home</a></header>
+<section class="top">
+  <div class="panel mission"><div><h1>Find the target transmission</h1><p>Identify the correct visual signal family. <span class="count" id="sigCount"></span></p></div></div>
+  <div class="panel stats"><div class="stat"><small>Score</small><b id="score">0</b></div><div class="stat"><small>Streak</small><b id="streak">0</b></div><div class="stat"><small>Time</small><b id="time">45</b></div><div class="stat"><small>Round</small><b id="round">1</b></div></div>
+</section>
+<section class="panel controls"><div><label>Difficulty</label><select id="difficulty"><option value="easy">Recruit</option><option value="normal" selected>Operator</option><option value="hard">Expert</option></select></div><div><button id="newRound">New Mission</button><button id="restart" class="primary">Restart Game</button></div></section>
+<div class="panel target" style="margin-bottom:10px;"><small>MISSION TARGET</small><b id="targetClue">Narrow digital voice</b></div><section class="panel game"><div class="canvas-wrap"><canvas id="spectrum" width="1120" height="420"></canvas></div><div id="feedback" class="feedback warn">Tap the signal that matches the clue.</div></section>
+<div class="bottom-spacer" aria-hidden="true"></div>
+</div>
+<script>
+const canvas=document.getElementById('spectrum'),ctx=canvas.getContext('2d');
+const types=[
+{name:'Narrow Digital Voice',clue:'Find the narrow digital voice channel',kind:'narrow',w:[14,24],c:'#61b8ff'},
+{name:'Analog AM',clue:'Find the AM signal with sidebands',kind:'am',w:[45,75],c:'#d6b8ff'},
+{name:'Continuous Carrier',clue:'Find the continuous narrow carrier',kind:'cw',w:[6,12],c:'#e7ffff'},
+{name:'Wide OFDM',clue:'Find the wide OFDM transmission',kind:'wide',w:[170,300],c:'#facc15'},
+{name:'Wide Burst OFDM',clue:'Find the intermittent wideband transmission',kind:'wideburst',w:[150,270],c:'#ffe06d'},
+{name:'Spread Spectrum',clue:'Find the spread-spectrum signal',kind:'spread',w:[70,150],c:'#8dff82'},
+{name:'LoRa Chirp',clue:'Find the chirp spread-spectrum packet',kind:'lora',w:[55,95],c:'#67ff72'},
+{name:'Frequency Hopper',clue:'Find the hopping transmission',kind:'hopping',w:[18,28],c:'#ff8a3d'},
+{name:'Pulse Burst',clue:'Find the pulsed transmission',kind:'pulse',w:[12,22],c:'#9affff'},
+{name:'Radar Sweep',clue:'Find the chirped radar sweep',kind:'chirp',w:[90,170],c:'#ffbd6e'},
+{name:'FSK Signal',clue:'Find the dual-tone FSK signal',kind:'fsk',w:[16,28],c:'#a7ffcf'},
+{name:'PSK/QAM',clue:'Find the dense digital modulation',kind:'psk',w:[24,48],c:'#c4adff'}
+];
+let signals=[],target=null,score=0,streak=0,round=1,timeLeft=45,gameOver=false,anim=0,timer=null,revealAll=false;
+const $=id=>document.getElementById(id),rand=(a,b)=>a+Math.random()*(b-a),choice=a=>a[Math.floor(Math.random()*a.length)],clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+$('sigCount').textContent = types.length + ' signal types loaded.';
+function cfg(){let d=$('difficulty').value;return d==='easy'?{count:7,noise:.17,time:55}:d==='hard'?{count:18,noise:.34,time:38}:{count:12,noise:.25,time:45}}
+function make(t,isTarget=false){let w=rand(t.w[0],t.w[1]);return {...t,w,x:rand(80+w,canvas.width-80-w),amp:isTarget?rand(.76,.98):rand(.45,.9),isTarget,phase:rand(0,999),reveal:false}}
+function noOverlap(s){for(let i=0;i<80;i++){if(!signals.some(o=>Math.abs(o.x-s.x)<(o.w+s.w)*.68))return s;s.x=rand(80+s.w,canvas.width-80-s.w)}return s}
+function newRound(){let c=cfg();signals=[];revealAll=false;let pool=[...types];target=make(choice(pool),true);signals.push(target);pool=pool.filter(t=>t.name!==target.name);for(let i=1;i<c.count;i++){let t=pool.splice(Math.floor(Math.random()*pool.length),1)[0]||choice(types.filter(x=>x.name!==target.name));signals.push(noOverlap(make(t,false)))}signals.sort((a,b)=>a.x-b.x);$('targetClue').textContent=target.clue;$('round').textContent=round;setFeed('Mission: '+target.clue,'warn');draw()}
+function restart(){score=0;streak=0;round=1;timeLeft=cfg().time;gameOver=false;update();clearInterval(timer);timer=setInterval(tick,1000);newRound()}
+function tick(){if(gameOver)return;timeLeft--;$('time').textContent=timeLeft;if(timeLeft<=0){gameOver=true;revealAll=true;setFeed('Target lost. Final score: '+score+'.','bad')}}
+function update(){$('score').textContent=score;$('streak').textContent=streak;$('round').textContent=round;$('time').textContent=timeLeft}
+function setFeed(t,cls){let e=$('feedback');e.textContent=t;e.className='feedback '+cls}
+function y(p){return canvas.height-70-p*250}
+function grid(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#03070d';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.strokeStyle='#15263a';ctx.lineWidth=1;for(let x=70;x<canvas.width-50;x+=80){ctx.beginPath();ctx.moveTo(x,35);ctx.lineTo(x,canvas.height-55);ctx.stroke()}for(let yy=55;yy<canvas.height-55;yy+=50){ctx.beginPath();ctx.moveTo(55,yy);ctx.lineTo(canvas.width-45,yy);ctx.stroke()}ctx.strokeStyle='#2a3f59';ctx.beginPath();ctx.moveTo(55,canvas.height-60);ctx.lineTo(canvas.width-45,canvas.height-60);ctx.moveTo(60,35);ctx.lineTo(60,canvas.height-55);ctx.stroke();ctx.fillStyle='#9fb1c8';ctx.font='13px Arial';ctx.fillText('-20',22,70);ctx.fillText('-60',22,195);ctx.fillText('-100',15,canvas.height-64)}
+function noise(){let n=cfg().noise;ctx.strokeStyle='#214566';ctx.lineWidth=2;ctx.beginPath();for(let x=60;x<canvas.width-45;x++){let p=n+Math.random()*.10+.04*Math.sin((x+anim)/21);let yy=y(p);if(x===60)ctx.moveTo(x,yy);else ctx.lineTo(x,yy)}ctx.stroke()}
+function sig(s){s.x+=Math.sin(anim/70+s.phase)*.035;let amp=s.amp*(.9+.1*Math.sin(anim/22+s.phase));ctx.strokeStyle=s.c;ctx.lineWidth=s.isTarget&&s.reveal?4:2;ctx.beginPath();let left=s.x-s.w*1.7,right=s.x+s.w*1.7;for(let x=left;x<=right;x+=2){let dx=Math.abs(x-s.x),p=0;if(s.kind==='narrow')p=amp*Math.exp(-(dx*dx)/(s.w*s.w*.22))+amp*.17*Math.exp(-(dx*dx)/(s.w*s.w*1.4));else if(s.kind==='cw')p=amp*Math.exp(-(dx*dx)/(s.w*s.w*.13));else if(s.kind==='cwkey'){let on=(Math.floor(anim/25+s.phase)%3)!==1;p=on?amp*Math.exp(-(dx*dx)/(s.w*s.w*.13)):amp*.03}else if(s.kind==='lora'||s.kind==='spread')p=dx<s.w/2?amp*(.55+.16*Math.sin((x+anim)/10)+.08*Math.random()):amp*.22*Math.exp(-dx/s.w);else if(s.kind==='wide'||s.kind==='wideburst'){let on=s.kind==='wide'||Math.sin(anim/35+s.phase)>.05;p=on?(dx<s.w/2?amp*(.45+.18*Math.random()):amp*.10*Math.exp(-dx/s.w)):0}else if(s.kind==='pulse'){let on=(Math.floor(anim/18+s.phase)%5)===0;p=on?amp*Math.exp(-(dx*dx)/(s.w*s.w*.20)):amp*.04}else if(s.kind==='chirp'){let sweep=(-s.w/2)+((anim+s.phase)%100)/100*s.w;let d=Math.abs(x-(s.x+sweep));p=amp*Math.exp(-(d*d)/(s.w*s.w*.018))+.08*amp*Math.exp(-(dx*dx)/(s.w*s.w*.9))}else if(s.kind==='hopping'){let slots=[-1.45,-.75,-.15,.45,1.1],active=Math.floor((anim/35+s.phase)%slots.length);for(let i=0;i<slots.length;i++){let d=Math.abs(x-(s.x+slots[i]*s.w));p=Math.max(p,(i===active?amp:amp*.13)*Math.exp(-(d*d)/(s.w*s.w*.12)))}}else if(s.kind==='am')p=amp*.42*Math.exp(-(dx*dx)/(s.w*s.w*.8))+amp*.42*Math.exp(-Math.pow(dx-s.w*.36,2)/(s.w*s.w*.08))+amp*.42*Math.exp(-Math.pow(dx+s.w*.36,2)/(s.w*s.w*.08));else if(s.kind==='fsk'){let tones=[-.45,.45];for(let tone of tones){let d=Math.abs(x-(s.x+tone*s.w));p=Math.max(p,amp*Math.exp(-(d*d)/(s.w*s.w*.10)))}}else if(s.kind==='psk')p=amp*Math.exp(-(dx*dx)/(s.w*s.w*.55))*(.55+.25*Math.random());else if(s.kind==='pager')p=amp*Math.exp(-(dx*dx)/(s.w*s.w*.28))*(.55+.18*Math.sin(anim/8+s.phase));let yy=y(clamp(p+.18,0,1));if(x===left)ctx.moveTo(x,yy);else ctx.lineTo(x,yy)}ctx.stroke();if(revealAll||s.reveal){ctx.fillStyle=s.isTarget?'#67ff72':'#aebbd0';ctx.font='bold 13px Arial';ctx.fillText(s.name,s.x-s.w/2,y(clamp(amp+.25,0,1)))}}
+function draw(){grid();noise();signals.forEach(sig)}
+function loop(){anim++;draw();requestAnimationFrame(loop)}
+function hit(e){if(gameOver)return;let r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*canvas.width/r.width;let clicked=null,best=9999;for(let s of signals){let d=Math.abs(x-s.x);if(d<Math.max(s.w*.95,24)&&d<best){clicked=s;best=d}}if(!clicked){streak=0;score=Math.max(0,score-10);gameOver=true;revealAll=true;setFeed('Mission failed. Empty spectrum. Press New Mission.','bad');update();return}clicked.reveal=true;if(clicked.isTarget){let bonus=100+streak*15+Math.max(0,timeLeft);score+=bonus;streak++;round++;timeLeft=Math.min(65,timeLeft+5);setFeed('Correct: '+clicked.name+' +'+bonus,'good');update();setTimeout(newRound,850)}else{target.reveal=true;streak=0;score=Math.max(0,score-35);gameOver=true;setFeed('Mission failed. Press New Mission.','bad');update()}}
+canvas.addEventListener('click',hit);$('newRound').onclick=()=>{gameOver=false;round++;newRound();update()};$('restart').onclick=restart;$('difficulty').onchange=restart;restart();loop();
+</script>
+</body>
+</html>
