@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Military Symbol Hunt v0.6</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#06101c;--panel:#0e1b2c;--line:#24405f;--text:#f8fafc;--muted:#aebbd0;--blue:#38bdf8;--green:#67ff72;--red:#ff4460;--yellow:#facc15;--orange:#fb923c}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% -10%,#16314f 0,#081422 38%,#040a12 100%);color:var(--text);font-family:Inter,Arial,sans-serif;overscroll-behavior:none}
+.app{max-width:1180px;margin:0 auto;padding:12px 12px 42px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}.brand{font-size:26px;font-weight:900}.badge{font-size:13px;border:1px solid #31577d;background:#102947;color:#bde2ff;border-radius:999px;padding:4px 9px;margin-left:8px}a{color:#9fd8ff;text-decoration:none}
+.panel{background:linear-gradient(145deg,rgba(16,30,47,.96),rgba(9,20,34,.99));border:1px solid var(--line);border-radius:16px;box-shadow:0 16px 30px rgba(0,0,0,.22)}
+.top{display:grid;grid-template-columns:1.2fr .8fr;gap:10px;margin-bottom:10px}.mission{padding:14px}.mission h1{margin:0 0 7px;font-size:23px}.mission p{margin:0;color:var(--muted);line-height:1.45}.stats{padding:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{background:#07182a;border:1px solid #1b3855;border-radius:12px;padding:10px;text-align:center}.stat small{display:block;color:var(--muted);font-weight:800;text-transform:uppercase;font-size:11px}.stat b{display:block;font-size:22px;margin-top:3px}
+.controls{padding:12px;margin-bottom:10px;display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center}.targetBox{background:#07182a;border:1px solid #1b3855;border-radius:12px;padding:10px}.targetBox small{display:block;color:#9fb1c8;font-weight:900;text-transform:uppercase;font-size:11px}.targetBox b{display:block;color:var(--yellow);font-size:21px;margin-top:3px}button{background:linear-gradient(#15243a,#0e1828);border:1px solid #28415f;color:#eef7ff;border-radius:10px;padding:10px 14px;font-weight:900;cursor:pointer}button:hover{border-color:#38bdf8}.primary{border-color:#1780ff;color:#61b8ff}.danger{border-color:#7f1d1d;color:#ff9aaa}
+.mapPanel{padding:10px}.mapWrap{position:relative;border:1px solid #20354f;border-radius:14px;overflow:hidden;background:#132312;touch-action:none}.mapWrap canvas{display:block;width:100%;height:auto;background:#143114}.mapStatus{margin-top:8px}.feedback{font-weight:900;font-size:18px;text-shadow:0 2px 4px #000;padding:8px 10px;border-radius:10px;background:rgba(3,7,13,.72);border:1px solid rgba(120,160,210,.35)}.good{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--yellow)}.mini{font-size:12px;color:#bde2ff;background:rgba(3,7,13,.72);border:1px solid rgba(120,160,210,.35);border-radius:999px;padding:6px 9px;font-weight:900}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}.legend .card{background:#07182a;border:1px solid #1b3855;border-radius:12px;padding:8px;font-size:13px;color:#aebbd0}.legend b{color:#f8fafc}
+@media(max-width:850px){.app{padding:8px 8px 34px}.top,.controls{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.brand{font-size:22px}.controls button{width:100%}.targetBox b{font-size:19px}.feedback{font-size:15px}.legend{grid-template-columns:1fr 1fr}}
+@media(max-width:460px){.legend{grid-template-columns:1fr}.mission h1{font-size:20px}.stat b{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand">🗺️ Military Symbol Hunt <span class="badge">v0.6</span></div><a href="index.html">← Back to home</a></header>
+<section class="top">
+  <div class="panel mission"><h1>Find the symbol on the tactical map</h1><p>A fictional tactical overlay is generated every mission. Find the requested APP-6 / MIL-STD-2525 military symbol fast. Streaks build a multiplier. Wrong taps cost time and points. Symbols are rendered through milsymbol.js when that file is present in your site root.</p></div>
+  <div class="panel stats"><div class="stat"><small>Score</small><b id="score">0</b></div><div class="stat"><small>Streak</small><b id="streak">0</b></div><div class="stat"><small>Time</small><b id="time">60</b></div><div class="stat"><small>Round</small><b id="round">1</b></div></div>
+</section>
+<section class="panel controls">
+  <div class="targetBox"><small>Locate</small><b id="target">Press Start</b></div>
+  <button id="start" class="primary">Start Blitz</button>
+  <button id="newMap">New Map</button>
+</section>
+<section class="panel mapPanel">
+  <div class="mapWrap" id="mapWrap"><canvas id="map" width="1120" height="680"></canvas></div><div class="mapStatus"><div id="feedback" class="feedback warn">Start the blitz, then tap the requested symbol.</div></div>
+  <div class="legend">
+    <div class="card"><b>Friendly symbols</b><br>Blue frames. Usually your own units.</div>
+    <div class="card"><b>Enemy symbols</b><br>Red frames. Hostile units and positions.</div>
+    <div class="card"><b>APP-6 / MIL-STD-2525 symbols</b><br>Rendered by <code>milsymbol.js</code> from your repo root. If it is missing, the game falls back to simple placeholders.</div>
+    <div class="card"><b>Generated overlay</b><br>Fictional grid, phase lines, objectives, roads, rivers, boundaries and checkpoints.</div>
+  </div>
+</section>
+</div>
+<script src="milsymbol.js"></script>
+<script>
+const canvas=document.getElementById('map'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id);const rand=(a,b)=>a+Math.random()*(b-a);const irand=(a,b)=>Math.floor(rand(a,b+1));const pick=a=>a[Math.floor(Math.random()*a.length)];const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+let symbols=[],target=null,score=0,streak=0,round=1,timeLeft=60,running=false,timer=null,anim=0,lastHit=null,revealTarget=false;
+const unitDefs=[
+ {name:'Battalion HQ',type:'hq',weight:4,ech:'II'},{name:'Company HQ',type:'hq',weight:5,ech:'I'},{name:'Infantry Platoon',type:'inf',weight:10,ech:'•••'},{name:'Mechanised Infantry',type:'mech',weight:7,ech:'•••'},{name:'Tank Troop',type:'arm',weight:8,ech:'••'},{name:'Artillery Battery',type:'arty',weight:6,ech:'I'},{name:'Mortar Platoon',type:'mtr',weight:6,ech:'•••'},{name:'Recon Patrol',type:'recce',weight:7,ech:'••'},{name:'EW Troop',type:'ew',weight:5,ech:'••'},{name:'Signals Detachment',type:'sig',weight:5,ech:'•'},{name:'Radar Site',type:'radar',weight:5,ech:'•'},{name:'SAM Section',type:'sam',weight:5,ech:'••'},{name:'Engineer Troop',type:'eng',weight:5,ech:'••'},{name:'Ambulance Collection Point',type:'med',weight:4,ech:'•'},{name:'UAV Team',type:'uav',weight:5,ech:'•'},{name:'Logistics Convoy',type:'log',weight:5,ech:'•'},{name:'Observation Post',type:'op',weight:5,ech:'•'}];
+// 15-character SIDC-style codes used by milsymbol. Affiliation is swapped at runtime.
+// These are deliberately kept in one place so we can tighten individual APP-6/MIL-STD codes later without touching the game logic.
+const sidcByType={
+ hq:'SFGPUUH----A---',
+ inf:'SFGPUCI--------',
+ mech:'SFGPUCIZ-------',
+ arm:'SFGPUCA--------',
+ arty:'SFGPUCF--------',
+ mtr:'SFGPUCFM-------',
+ recce:'SFGPUCR--------',
+ ew:'SFGPUUS--------',
+ sig:'SFGPUUS--------',
+ radar:'SFGPUUS--------',
+ sam:'SFGPUCDS-------',
+ eng:'SFGPUCE--------',
+ med:'SFGPUUM--------',
+ uav:'SFGPUCD--------',
+ log:'SFGPUUL--------',
+ op:'SFGPUCR--------'
+};
+const milCache=new Map();
+function makeSidc(s){let base=sidcByType[s.type]||'SFGPUU--------';return base.slice(0,1)+(s.side==='enemy'?'H':'F')+base.slice(2);}
+function milOptions(s){return {size:46,uniqueDesignation:s.label,staffComments:s.ech,additionalInformation:s.name};}
+function getMilGraphic(s){
+ if(!(window.ms&&ms.Symbol))return null;
+ const key=[s.side,s.type,s.label,s.ech].join('|');
+ if(milCache.has(key))return milCache.get(key);
+ try{
+  const sym=new ms.Symbol(makeSidc(s),milOptions(s));
+  let graphic=null;
+  if(typeof sym.asCanvas==='function'){graphic=sym.asCanvas();}
+  else if(typeof sym.asDataURI==='function'){graphic=new Image();graphic.onload=()=>draw();graphic.src=sym.asDataURI();}
+  else if(typeof sym.asSVG==='function'){graphic=new Image();graphic.onload=()=>draw();graphic.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sym.asSVG());}
+  milCache.set(key,graphic);return graphic;
+ }catch(e){console.warn('milsymbol render failed for',s.name,makeSidc(s),e);milCache.set(key,null);return null;}
+}
+
+const echelons=['•','••','•••','I','II'];const calls=['A','B','C','D','E','F','1','2','3','4','R','S'];const phaseNames=['RED','BLUE','GOLD','IRON','RAVEN'];const objNames=['ALPHA','BRAVO','COPPER','DINGO','FALCON','HAMMER','IRON','RAVEN'];
+function weightedUnits(){let arr=[];unitDefs.forEach(u=>{for(let i=0;i<u.weight;i++)arr.push(u)});return arr;}
+function setFeed(t,c){let e=$('feedback');e.textContent=t;e.className='feedback '+c}
+function update(){ $('score').textContent=score; $('streak').textContent=streak; $('time').textContent=timeLeft; $('round').textContent=round; }
+function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function openSpot(x,y,w=72,h=48){
+ if(x<60||x>canvas.width-60||y<60||y>canvas.height-60)return false;
+ // Keep symbols readable and prevent units being stacked on one another.
+ return !symbols.some(s=>Math.abs(s.x-x)<(w+s.w)*.78 && Math.abs(s.y-y)<(h+s.h)*.78);
+}
+function sideZone(side){
+ // Friendly rear/forward areas on the west, hostile rear/forward areas on the east.
+ // This keeps the tactical picture believable instead of enemy icons sitting on top of friendlies.
+ const zones={
+  friendly:[{x1:95,x2:430,y1:95,y2:585},{x1:385,x2:535,y1:130,y2:550}],
+  enemy:[{x1:690,x2:1025,y1:95,y2:585},{x1:585,x2:735,y1:130,y2:550}]
+ };
+ return pick(zones[side]);
+}
+function placeSymbol(def,side){
+ for(let i=0;i<260;i++){
+  let z=sideZone(side); let x=rand(z.x1,z.x2),y=rand(z.y1,z.y2);
+  // HQ/logistics/medical generally sit slightly deeper; recon/OP can sit closer to the front.
+  if(['hq','log','med','radar'].includes(def.type)){ x=side==='friendly'?rand(95,365):rand(755,1025); }
+  if(['recce','op','ew'].includes(def.type)){ x=side==='friendly'?rand(410,565):rand(555,710); }
+  if(openSpot(x,y)){let label=(side==='friendly'?pick(calls):pick(calls))+irand(1,9);return {...def,side,x,y,w:72,h:48,label,ech:def.ech||pick(echelons),found:false,id:Math.random().toString(36).slice(2)}}
+ }
+ return null;
+}
+function generateMap(){
+ symbols=[];lastHit=null;revealTarget=false;
+ let pool=weightedUnits();
+ let count=irand(30,42); // less cluttered than earlier versions
+ for(let i=0;i<count;i++){
+  let side=i%2===0?'friendly':'enemy';
+  let s=placeSymbol(pick(pool),side);if(s)symbols.push(s);
+ }
+ ensureTypes(['EW Troop','Battalion HQ','Artillery Battery','Radar Site','Tank Troop','Recon Patrol','Engineer Troop','SAM Section','UAV Team','Ambulance Collection Point','Signals Detachment']);draw();
+}
+function ensureTypes(names){names.forEach((n,i)=>{if(!symbols.some(s=>s.name===n)){let def=unitDefs.find(u=>u.name===n);let s=placeSymbol(def,i%2===0?'friendly':'enemy');if(s)symbols.push(s);}})}
+function chooseTarget(){let eligible=symbols.filter(s=>!s.found); if(!eligible.length){generateMap();eligible=symbols;} target=pick(eligible);$('target').textContent=(target.side==='enemy'?'Enemy ':'Friendly ')+target.name+' — '+target.label;}
+function start(){score=0;streak=0;round=1;timeLeft=60;running=true;generateMap();chooseTarget();update();setFeed('Find: '+$('target').textContent,'warn');clearInterval(timer);timer=setInterval(()=>{if(!running)return;timeLeft--;update();if(timeLeft<=0)endGame();},1000)}
+function endGame(){running=false;clearInterval(timer);revealTarget=true;$('target').textContent='Blitz complete';setFeed('Time. Final score: '+score+'. Correct symbol highlighted in yellow.','bad');draw();}
+function newMap(){generateMap();if(running){chooseTarget();setFeed('New map generated. Find: '+$('target').textContent,'warn');}else{$('target').textContent='Press Start';setFeed('New tactical map generated.','warn')}}
+function drawTerrain(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#142c18';ctx.fillRect(0,0,canvas.width,canvas.height);
+ // map paper texture
+ for(let i=0;i<650;i++){ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.018})`;ctx.fillRect(Math.random()*canvas.width,Math.random()*canvas.height,1,1)}
+ // MGRS-like grid with edge references
+ ctx.strokeStyle='rgba(205,230,185,.17)';ctx.lineWidth=1;ctx.font='10px Arial';ctx.fillStyle='rgba(210,235,190,.65)';
+ for(let x=40,idx=10;x<canvas.width;x+=80,idx++){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();ctx.fillText(String(idx).padStart(2,'0'),x+3,13)}
+ for(let y=40,idx=20;y<canvas.height;y+=80,idx++){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();ctx.fillText(String(idx).padStart(2,'0'),4,y-3)}
+ // contours
+ ctx.strokeStyle='rgba(185,130,76,.30)';ctx.lineWidth=1.15;for(let c=0;c<22;c++){let x=rand(70,1050),y=rand(60,620),rx=rand(45,145),ry=rand(22,85);ctx.beginPath();ctx.ellipse(x,y,rx,ry,rand(0,Math.PI),0,Math.PI*2);ctx.stroke();}
+ // woods
+ for(let w=0;w<20;w++){let x=rand(60,1060),y=rand(60,620),rx=rand(35,95),ry=rand(22,65);ctx.fillStyle='rgba(18,82,35,.43)';ctx.beginPath();ctx.ellipse(x,y,rx,ry,rand(0,Math.PI),0,Math.PI*2);ctx.fill();}
+ // rivers
+ for(let r=0;r<2;r++){ctx.beginPath();let y=rand(125,555),amp=rand(25,54),off=rand(0,99);ctx.moveTo(0,y);for(let x=0;x<=canvas.width;x+=18)ctx.lineTo(x,y+Math.sin(x/90+off)*amp+Math.sin(x/31+off)*9);ctx.strokeStyle='rgba(67,170,220,.54)';ctx.lineWidth=9;ctx.stroke();ctx.strokeStyle='rgba(190,240,255,.35)';ctx.lineWidth=2;ctx.stroke();}
+ // roads/tracks
+ for(let r=0;r<5;r++){ctx.beginPath();let y=rand(70,610),off=rand(0,99),curve=rand(95,145);ctx.moveTo(0,y);for(let x=0;x<=canvas.width;x+=25)ctx.lineTo(x,y+Math.sin(x/curve+off)*rand(12,32));ctx.strokeStyle='rgba(215,190,130,.46)';ctx.lineWidth=5;ctx.stroke();ctx.strokeStyle='rgba(45,30,16,.35)';ctx.lineWidth=1;ctx.stroke();}
+ // unit boundaries
+ ctx.strokeStyle='rgba(250,250,250,.45)';ctx.setLineDash([16,9,3,9]);ctx.lineWidth=2;for(let i=0;i<3;i++){let x=rand(150,960);ctx.beginPath();ctx.moveTo(x,35);for(let y=35;y<canvas.height-35;y+=40)ctx.lineTo(x+Math.sin(y/80+i)*45,y);ctx.stroke();}ctx.setLineDash([]);
+ // phase lines
+ ctx.font='bold 13px Arial';ctx.textAlign='center';for(let i=0;i<3;i++){let x=rand(160,960),name=pick(phaseNames);ctx.strokeStyle='rgba(250,204,21,.62)';ctx.fillStyle='rgba(250,204,21,.85)';ctx.setLineDash([12,9]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,40);ctx.lineTo(x+rand(-70,70),canvas.height-40);ctx.stroke();ctx.setLineDash([]);ctx.fillText('PL '+name,x+8,55+i*22)}
+ // objectives, checkpoints, assembly areas
+ for(let i=0;i<6;i++){let x=rand(115,1005),y=rand(90,590),name=pick(objNames);ctx.strokeStyle='rgba(255,255,255,.55)';ctx.fillStyle='rgba(255,255,255,.85)';ctx.lineWidth=2;ctx.strokeRect(x-45,y-22,90,44);ctx.font='bold 12px Arial';ctx.fillText('OBJ '+name,x,y+4)}
+ for(let i=0;i<5;i++){let x=rand(100,1020),y=rand(80,600);ctx.strokeStyle='rgba(120,220,255,.65)';ctx.fillStyle='rgba(120,220,255,.86)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,18,0,Math.PI*2);ctx.stroke();ctx.font='bold 11px Arial';ctx.fillText('CP '+irand(1,9),x,y+4)}
+ for(let i=0;i<4;i++){let x=rand(120,1000),y=rand(100,580);ctx.strokeStyle='rgba(255,180,90,.62)';ctx.fillStyle='rgba(255,180,90,.84)';ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();ctx.ellipse(x,y,42,24,rand(0,Math.PI),0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.font='bold 11px Arial';ctx.fillText('AA '+pick(calls),x,y+4)}
+ ctx.textAlign='left';
+}
+function framePath(s,friendly,enemy,neutral){
+ ctx.beginPath();
+ if(friendly){ctx.rect(-s.w/2,-s.h/2,s.w,s.h)}
+ else if(enemy){ctx.moveTo(0,-s.h/2-8);ctx.lineTo(s.w/2+8,0);ctx.lineTo(0,s.h/2+8);ctx.lineTo(-s.w/2-8,0);ctx.closePath()}
+ else {ctx.arc(0,0,s.h/2+4,0,Math.PI*2)}
+}
+function drawBranchIcon(s,col){ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=2.2;ctx.lineCap='round';ctx.lineJoin='round';
+ if(s.type==='hq'){ctx.font='bold 18px Arial';ctx.textAlign='center';ctx.fillText('HQ',0,6)}
+ if(s.type==='inf'){ctx.beginPath();ctx.moveTo(-20,-13);ctx.lineTo(20,13);ctx.moveTo(20,-13);ctx.lineTo(-20,13);ctx.stroke()}
+ if(s.type==='mech'){ctx.beginPath();ctx.moveTo(-20,-13);ctx.lineTo(20,13);ctx.moveTo(20,-13);ctx.lineTo(-20,13);ctx.stroke();ctx.beginPath();ctx.ellipse(0,14,21,7,0,0,Math.PI*2);ctx.stroke()}
+ if(s.type==='arm'){ctx.beginPath();ctx.ellipse(0,0,25,13,0,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(-16,0);ctx.lineTo(15,0);ctx.moveTo(15,0);ctx.lineTo(25,-7);ctx.stroke()}
+ if(s.type==='arty'){ctx.beginPath();ctx.arc(0,0,13,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(-25,0);ctx.lineTo(25,0);ctx.stroke()}
+ if(s.type==='mtr'){ctx.beginPath();ctx.arc(0,0,12,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(0,-18);ctx.lineTo(0,18);ctx.stroke()}
+ if(s.type==='recce'){ctx.beginPath();ctx.moveTo(-22,0);ctx.lineTo(0,-16);ctx.lineTo(22,0);ctx.lineTo(0,16);ctx.closePath();ctx.stroke()}
+ if(s.type==='ew'){ctx.beginPath();ctx.arc(-16,0,8,-.9,.9);ctx.arc(16,0,8,Math.PI-.9,Math.PI+.9);ctx.moveTo(-5,0);ctx.lineTo(5,0);ctx.stroke();ctx.font='bold 13px Arial';ctx.textAlign='center';ctx.fillText('EW',0,17)}
+ if(s.type==='sig'){ctx.beginPath();ctx.moveTo(-20,14);ctx.lineTo(-5,-6);ctx.lineTo(5,6);ctx.lineTo(20,-14);ctx.stroke()}
+ if(s.type==='radar'){ctx.beginPath();ctx.arc(0,8,23,Math.PI*1.12,Math.PI*1.88);ctx.arc(0,8,14,Math.PI*1.15,Math.PI*1.85);ctx.stroke();ctx.beginPath();ctx.moveTo(0,8);ctx.lineTo(0,-16);ctx.stroke()}
+ if(s.type==='sam'){ctx.beginPath();ctx.moveTo(-22,14);ctx.lineTo(22,-14);ctx.moveTo(12,-16);ctx.lineTo(22,-14);ctx.lineTo(18,-4);ctx.stroke()}
+ if(s.type==='eng'){ctx.beginPath();ctx.moveTo(-22,12);ctx.lineTo(-8,-12);ctx.lineTo(8,12);ctx.lineTo(22,-12);ctx.stroke()}
+ if(s.type==='med'){ctx.beginPath();ctx.moveTo(0,-18);ctx.lineTo(0,18);ctx.moveTo(-18,0);ctx.lineTo(18,0);ctx.stroke()}
+ if(s.type==='uav'){ctx.beginPath();ctx.moveTo(-24,3);ctx.lineTo(0,-10);ctx.lineTo(24,3);ctx.moveTo(0,-10);ctx.lineTo(0,16);ctx.moveTo(-9,11);ctx.lineTo(9,11);ctx.stroke()}
+ if(s.type==='log'){ctx.strokeRect(-20,-10,31,20);ctx.strokeRect(11,-5,13,15);ctx.beginPath();ctx.arc(-10,13,4,0,Math.PI*2);ctx.arc(16,13,4,0,Math.PI*2);ctx.stroke()}
+ if(s.type==='op'){ctx.beginPath();ctx.arc(0,0,18,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(-28,0);ctx.lineTo(28,0);ctx.moveTo(0,-28);ctx.lineTo(0,28);ctx.stroke()}
+}
+function drawFallbackSymbol(s){let friendly=s.side==='friendly',enemy=s.side==='enemy',col=friendly?'#38bdf8':'#ff4460',fill=friendly?'rgba(56,189,248,.09)':'rgba(255,68,96,.09)';ctx.save();ctx.translate(s.x,s.y);ctx.lineWidth=2.6;ctx.strokeStyle=col;ctx.fillStyle=fill;
+ framePath(s,friendly,enemy,false);ctx.fill();ctx.stroke();
+ // echelon mark above frame
+ ctx.fillStyle=col;ctx.font='bold 13px Arial';ctx.textAlign='center';ctx.fillText(s.ech||'',0,-s.h/2-12);
+ drawBranchIcon(s,col);
+ // HQ staff and mobility indicators
+ if(s.type==='hq'){ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(-s.w/2+9,s.h/2);ctx.lineTo(-s.w/2+9,s.h/2+24);ctx.stroke();ctx.fillRect(-s.w/2+6,s.h/2+22,6,5)}
+ if(['mech','arm','log'].includes(s.type)){ctx.strokeStyle=col;ctx.beginPath();ctx.ellipse(0,s.h/2+8,24,5,0,0,Math.PI*2);ctx.stroke()}
+ // small designation below, like an overlay label
+ ctx.font='bold 11px Arial';ctx.fillStyle='rgba(240,250,255,.88)';ctx.strokeStyle='rgba(0,0,0,.7)';ctx.lineWidth=3;ctx.strokeText(s.label,0,s.h/2+20);ctx.fillText(s.label,0,s.h/2+20);
+ if(s===target&&lastHit==='correct'){ctx.strokeStyle='#67ff72';ctx.lineWidth=4;ctx.setLineDash([8,5]);ctx.strokeRect(-s.w/2-8,-s.h/2-8,s.w+16,s.h+16);ctx.setLineDash([])}
+ if(s===target&&revealTarget){ctx.strokeStyle='#facc15';ctx.lineWidth=5;ctx.setLineDash([10,6]);ctx.strokeRect(-s.w/2-13,-s.h/2-13,s.w+26,s.h+26);ctx.setLineDash([]);ctx.fillStyle='rgba(250,204,21,.18)';ctx.fillRect(-s.w/2-13,-s.h/2-13,s.w+26,s.h+26)}
+ ctx.restore();}
+function drawSymbol(s){
+ const g=getMilGraphic(s);
+ if(!g){drawFallbackSymbol(s);return;}
+ const w=g.width||96,h=g.height||96;
+ ctx.save();
+ ctx.translate(s.x,s.y);
+ ctx.drawImage(g,-w/2,-h/2,w,h);
+ if(s===target&&lastHit==='correct'){ctx.strokeStyle='#67ff72';ctx.lineWidth=4;ctx.setLineDash([8,5]);ctx.strokeRect(-w/2-8,-h/2-8,w+16,h+16);ctx.setLineDash([])}
+ if(s===target&&revealTarget){ctx.strokeStyle='#facc15';ctx.lineWidth=5;ctx.setLineDash([10,6]);ctx.strokeRect(-w/2-13,-h/2-13,w+26,h+26);ctx.setLineDash([]);ctx.fillStyle='rgba(250,204,21,.16)';ctx.fillRect(-w/2-13,-h/2-13,w+26,h+26)}
+ ctx.restore();
+}
+function draw(){drawTerrain();symbols.forEach(drawSymbol)}
+function clientToMap(e){let wrap=document.getElementById('mapWrap'),r=wrap.getBoundingClientRect(),sx=canvas.width/canvas.clientWidth,sy=canvas.height/canvas.clientHeight;let v=window.mapView||{scale:1,ox:0,oy:0};return {x:((e.clientX-r.left-v.ox)/v.scale)*sx,y:((e.clientY-r.top-v.oy)/v.scale)*sy};}
+function hit(e){if(!running||!target)return;let pt=clientToMap(e),x=pt.x,y=pt.y;let clicked=null,best=9999;for(let s of symbols){let d=Math.abs(x-s.x)/(s.w*.65)+Math.abs(y-s.y)/(s.h*.65);if(d<1.7&&d<best){clicked=s;best=d}}
+ if(clicked===target){lastHit='correct';target.found=true;let fast=Math.max(0,timeLeft);let pts=100+streak*20+Math.floor(fast/3);score+=pts;streak++;round++;setFeed('Correct: '+$('target').textContent+' +'+pts,'good');update();draw();setTimeout(()=>{chooseTarget();setFeed('Find: '+$('target').textContent,'warn');draw();},450)}
+ else{streak=0;score=Math.max(0,score-35);timeLeft=Math.max(0,timeLeft-3);setFeed(clicked?'Wrong symbol. -35 and -3 sec.':'Missed. -35 and -3 sec.','bad');update();if(timeLeft<=0)endGame();}
+}
+canvas.addEventListener('click',hit);$('start').onclick=start;$('newMap').onclick=newMap;
+function loop(){anim++;requestAnimationFrame(loop)}
+generateMap();update();loop();
+</script>
+
+<script>
+(function(){
+const c=document.querySelector('canvas');
+const wrap=document.getElementById('mapWrap');
+if(!c||!wrap)return;
+let scale=1,ox=0,oy=0,startDist=0,startScale=1,startMid=null,active=new Map(),dragStart=null,totalMove=0;
+window.mapView={scale,ox,oy};
+c.style.touchAction='none';
+function clampView(){
+  const cw=c.clientWidth, ch=c.clientHeight;
+  const ww=wrap.clientWidth, wh=wrap.clientHeight;
+  const minScale=1;
+  scale=Math.max(minScale,Math.min(4,scale));
+  const sw=cw*scale, sh=ch*scale;
+  if(sw<=ww){ ox=(ww-sw)/2; } else { ox=Math.min(0,Math.max(ww-sw,ox)); }
+  if(sh<=wh){ oy=(wh-sh)/2; } else { oy=Math.min(0,Math.max(wh-sh,oy)); }
+}
+function apply(){
+  clampView();
+  c.style.transform=`translate(${ox}px,${oy}px) scale(${scale})`;
+  c.style.transformOrigin='0 0';
+  window.mapView={scale,ox,oy};
+}
+function zoomAt(clientX,clientY,newScale){
+  const r=wrap.getBoundingClientRect();
+  const x=clientX-r.left, y=clientY-r.top;
+  const beforeX=(x-ox)/scale, beforeY=(y-oy)/scale;
+  scale=newScale;
+  ox=x-beforeX*scale; oy=y-beforeY*scale;
+  apply();
+}
+c.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.clientX,e.clientY,scale*(e.deltaY<0?1.14:.88));},{passive:false});
+c.addEventListener('pointerdown',e=>{e.preventDefault();active.set(e.pointerId,{x:e.clientX,y:e.clientY});c.setPointerCapture(e.pointerId);dragStart={x:e.clientX,y:e.clientY};totalMove=0;});
+c.addEventListener('pointermove',e=>{
+  if(!active.has(e.pointerId))return;
+  e.preventDefault();
+  const prev=active.get(e.pointerId); active.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(active.size===1){
+    const dx=e.clientX-prev.x, dy=e.clientY-prev.y; totalMove+=Math.hypot(dx,dy); ox+=dx; oy+=dy; apply();
+  } else if(active.size===2){
+    const pts=[...active.values()];
+    const d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+    const mid={x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2};
+    if(!startDist){startDist=d;startScale=scale;startMid=mid;}
+    zoomAt(mid.x,mid.y,startScale*d/startDist);
+  }
+});
+c.addEventListener('pointerup',e=>{
+  active.delete(e.pointerId); startDist=0;
+  if(dragStart && totalMove<8 && active.size===0 && typeof hit==='function') hit(e);
+  if(active.size===0) dragStart=null;
+});
+c.addEventListener('pointercancel',e=>{active.delete(e.pointerId);startDist=0;dragStart=null;});
+window.addEventListener('resize',apply);
+apply();
+})();
+</script></body>
+</html>
