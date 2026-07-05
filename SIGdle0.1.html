@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIGdle | Dan's Fun School of Signals</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #08111f; --panel: #111c2e; --line: #2e405f; --text: #f8fafc;
+      --muted: #aab8cf; --blue: #38bdf8; --green: #22c55e; --yellow: #eab308; --red: #ef4444;
+    }
+    body {
+      margin: 0; font-family: Arial, sans-serif;
+      background: radial-gradient(circle at top, #172554 0, var(--bg) 45%, #050914 100%);
+      color: var(--text); min-height: 100vh;
+    }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      padding: 18px 22px; border-bottom: 1px solid rgba(148,163,184,.2);
+      background: rgba(8,17,31,.84); position: sticky; top: 0; z-index: 10;
+    }
+    .brand { font-weight: 900; letter-spacing: .08em; }
+    .back-link { color: var(--muted); text-decoration: none; }
+    .back-link:hover { color: var(--blue); }
+    .wrap { width: min(1180px, 100%); margin: 0 auto; padding: 26px 18px 46px; }
+    .hero, .game { display: grid; gap: 18px; }
+    .hero { grid-template-columns: 1.2fr .8fr; margin-bottom: 18px; }
+    .game { grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr); align-items: start; }
+    .panel {
+      background: linear-gradient(180deg, rgba(23,38,61,.96), rgba(17,28,46,.96));
+      border: 1px solid rgba(148,163,184,.22); border-radius: 20px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.25);
+    }
+    .intro, .stats, .display, .side { padding: 22px; }
+    h1 { margin: 0 0 10px; font-size: clamp(2rem, 5vw, 4rem); line-height: .95; }
+    p { color: var(--muted); line-height: 1.55; }
+    .stat-row {
+      display: flex; justify-content: space-between; gap: 10px; padding: 12px 14px;
+      background: rgba(15,23,42,.6); border: 1px solid rgba(148,163,184,.16); border-radius: 14px; margin-bottom: 12px;
+    }
+    .stat-row span:first-child { color: var(--muted); }
+    .canvas-label {
+      display: flex; justify-content: space-between; gap: 12px; color: var(--muted);
+      font-size: .9rem; margin: 4px 4px 8px;
+    }
+    canvas { width: 100%; display: block; background: #030712; border: 1px solid rgba(148,163,184,.25); border-radius: 14px; }
+    #spectrum { height: 180px; }
+    #waterfall { height: 330px; margin-top: 12px; }
+    .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+    button, select {
+      border: 1px solid rgba(148,163,184,.25); background: #16243a; color: var(--text);
+      border-radius: 12px; padding: 12px 14px; font-weight: 800; cursor: pointer;
+    }
+    button:hover, select:hover { border-color: var(--blue); }
+    button.primary { background: var(--blue); color: #06101d; border-color: transparent; }
+    button.danger { background: rgba(239,68,68,.14); }
+    .guess-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 14px; }
+    .message { min-height: 24px; color: var(--muted); line-height: 1.4; margin: 8px 2px 16px; }
+    .attempts { display: grid; gap: 10px; }
+    .attempt { padding: 12px; border-radius: 14px; background: rgba(15,23,42,.62); border: 1px solid rgba(148,163,184,.16); }
+    .attempt-title { display: flex; justify-content: space-between; gap: 10px; font-weight: 900; margin-bottom: 10px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip {
+      font-size: .78rem; padding: 6px 8px; border-radius: 999px;
+      border: 1px solid rgba(148,163,184,.2); color: #dbeafe; background: rgba(148,163,184,.1);
+    }
+    .chip.good { background: rgba(34,197,94,.2); border-color: rgba(34,197,94,.55); }
+    .chip.close { background: rgba(234,179,8,.2); border-color: rgba(234,179,8,.55); }
+    .chip.bad { background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.45); }
+    .hint-box {
+      margin-top: 16px; padding: 14px; border-radius: 14px; background: rgba(56,189,248,.08);
+      border: 1px solid rgba(56,189,248,.22); color: #dbeafe; line-height: 1.45;
+    }
+    .share { width: 100%; margin-top: 14px; display: none; }
+    .signal-list { margin-top: 18px; color: var(--muted); font-size: .9rem; line-height: 1.45; }
+    @media (max-width: 900px) { .hero, .game { grid-template-columns: 1fr; } .controls { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 520px) {
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .intro, .stats, .display, .side { padding: 16px; }
+      .guess-row, .controls { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="topbar">
+    <div class="brand">SIGDLE</div>
+    <a class="back-link" href="index.html">← Back to Dan's Fun School of Signals</a>
+  </nav>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="panel intro">
+        <h1>Guess the mystery signal.</h1>
+        <p>Like Wordle, but for signals analysis. Study the spectrum and waterfall, then guess the signal type. Every wrong guess gives you feedback on modulation, bandwidth, usage, and behaviour.</p>
+      </div>
+      <div class="panel stats">
+        <div class="stat-row"><span>Puzzle</span><strong id="puzzleId">Daily</strong></div>
+        <div class="stat-row"><span>Attempts</span><strong id="attemptCount">0 / 6</strong></div>
+        <div class="stat-row"><span>Mode</span><strong id="modeLabel">Daily</strong></div>
+      </div>
+    </section>
+
+    <section class="game">
+      <div class="panel display">
+        <div class="canvas-label"><span>Spectrum view</span><span id="freqLabel">Centre: -- MHz</span></div>
+        <canvas id="spectrum" width="900" height="240"></canvas>
+        <div class="canvas-label"><span>Waterfall view</span><span id="bwLabel">Bandwidth: --</span></div>
+        <canvas id="waterfall" width="900" height="430"></canvas>
+        <div class="controls">
+          <button id="revealBtn">Reveal Hint</button>
+          <button id="newPracticeBtn">Practice Signal</button>
+          <button id="resetBtn" class="danger">Reset Daily</button>
+          <button id="redrawBtn">Redraw Display</button>
+        </div>
+      </div>
+
+      <div class="panel side">
+        <div class="guess-row">
+          <select id="guessSelect"></select>
+          <button id="guessBtn" class="primary">Guess</button>
+        </div>
+        <div class="message" id="message">Pick a signal type and send a guess.</div>
+        <div class="attempts" id="attempts"></div>
+        <button id="shareBtn" class="share">Copy Result</button>
+        <button id="wikiBtn" class="share">Open SIGIDWiki Page</button>
+        <div class="hint-box" id="hintBox">First hint: look at occupied bandwidth, burst pattern, hopping behaviour, and whether it feels like voice, data, broadcast, cellular, or tactical networking.</div>
+        <div class="signal-list" id="signalList"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const signals = [
+      { name:'FM Broadcast', family:'Analog', modulation:'FM', bandwidth:180, use:'Broadcast', hopping:'No', pattern:'wide-fm', wiki:'https://www.sigidwiki.com/wiki/Broadcast_FM', clue:'Very wide, constant, broadcast-style signal.' },
+      { name:'Narrowband FM Voice', family:'Analog', modulation:'FM', bandwidth:12.5, use:'Voice', hopping:'No', pattern:'voice-fm', wiki:'https://www.sigidwiki.com/wiki/Narrowband_FM', clue:'Thin voice channel with uneven speech bursts.' },
+      { name:'AM Airband Voice', family:'Analog', modulation:'AM', bandwidth:8.33, use:'Aircraft', hopping:'No', pattern:'am-voice', wiki:'https://www.sigidwiki.com/wiki/Amplitude_Modulation_(AM)', clue:'Aircraft-style AM voice: narrow, speechy, and usually not full quieting like FM.' },
+      { name:'P25 Phase 1', family:'Digital', modulation:'C4FM', bandwidth:12.5, use:'Land Mobile', hopping:'No', pattern:'p25', wiki:'https://www.sigidwiki.com/wiki/APCO_Project_25', clue:'Narrow digital voice channel used by land mobile radio.' },
+      { name:'DMR', family:'Digital', modulation:'4FSK', bandwidth:12.5, use:'Land Mobile', hopping:'No', pattern:'dmr', wiki:'https://www.sigidwiki.com/wiki/Digital_Mobile_Radio_(DMR)', clue:'Two-slot digital mobile radio style signal.' },
+      { name:'NXDN', family:'Digital', modulation:'4FSK', bandwidth:6.25, use:'Land Mobile', hopping:'No', pattern:'nxdn', wiki:'https://www.sigidwiki.com/wiki/NXDN', clue:'Very narrow 4FSK land-mobile digital voice channel.' },
+      { name:'TETRA', family:'Digital', modulation:'π/4 DQPSK', bandwidth:25, use:'Trunked Radio', hopping:'No', pattern:'tetra', wiki:'https://www.sigidwiki.com/wiki/TETRA', clue:'Wider trunked radio signal with a dense digital look.' },
+      { name:'LoRa', family:'Digital', modulation:'Chirp Spread Spectrum', bandwidth:125, use:'Telemetry', hopping:'No', pattern:'lora', wiki:'https://www.sigidwiki.com/wiki/LoRa', clue:'Diagonal chirps climbing or falling across the waterfall.' },
+      { name:'ADS-B', family:'Digital', modulation:'Pulse Position', bandwidth:2, use:'Aircraft', hopping:'No', pattern:'adsb', wiki:'https://www.sigidwiki.com/wiki/Automatic_Dependent_Surveillance-Broadcast_(ADS-B)', clue:'Short aircraft transponder bursts rather than a continuous carrier.' },
+      { name:'AIS', family:'Digital', modulation:'GMSK', bandwidth:25, use:'Marine', hopping:'No', pattern:'ais', wiki:'https://www.sigidwiki.com/wiki/Automatic_Identification_System_(AIS)', clue:'Marine data bursts around narrow VHF channels.' },
+      { name:'ACARS', family:'Digital', modulation:'MSK', bandwidth:2.4, use:'Aircraft', hopping:'No', pattern:'acars', wiki:'https://www.sigidwiki.com/wiki/ACARS', clue:'Short aircraft data messages in a narrow channel.' },
+      { name:'FT8', family:'Digital', modulation:'8FSK', bandwidth:.05, use:'Amateur Radio', hopping:'No', pattern:'ft8', wiki:'https://www.sigidwiki.com/wiki/FT8', clue:'Tiny timed tones, very narrow and very structured.' },
+      { name:'PSK31', family:'Digital', modulation:'BPSK', bandwidth:.03, use:'Amateur Radio', hopping:'No', pattern:'psk31', wiki:'https://www.sigidwiki.com/wiki/PSK31', clue:'Extremely narrow keyboard-to-keyboard digital mode.' },
+
+      { name:'STANAG 4285', family:'Digital', modulation:'8PSK', bandwidth:2.4, use:'Military HF', hopping:'No', pattern:'stanag4285', wiki:'https://www.sigidwiki.com/wiki/STANAG_4285', clue:'NATO HF serial-tone waveform: tight 8PSK-looking channel around a few kHz wide.' },
+      { name:'MIL-STD-188-110A', family:'Digital', modulation:'PSK', bandwidth:3, use:'Military HF', hopping:'No', pattern:'mil188', wiki:'https://www.sigidwiki.com/wiki/MIL-STD-188-110A', clue:'Military HF data waveform with a compact PSK serial-tone look.' },
+      { name:'MIL-STD-188-110B', family:'Digital', modulation:'PSK/QAM', bandwidth:3, use:'Military HF', hopping:'No', pattern:'mil188b', wiki:'https://www.sigidwiki.com/wiki/MIL-STD-188-110B', clue:'HF data waveform with dense serial-tone energy and stronger data-like texture.' },
+      { name:'2G ALE', family:'Digital', modulation:'8FSK', bandwidth:2, use:'Military HF', hopping:'Channel scan', pattern:'ale', wiki:'https://www.sigidwiki.com/wiki/Automatic_Link_Establishment_(2G_ALE)', clue:'HF automatic link setup bursts, often short and repetitive.' },
+      { name:'Link-11 CLEW', family:'Digital', modulation:'DPSK', bandwidth:3, use:'Tactical Data Link', hopping:'No', pattern:'link11', wiki:'https://www.sigidwiki.com/wiki/Link-11', clue:'Classic tactical data link style signal, narrow enough for HF/UHF channels.' },
+      { name:'Link-11 SLEW', family:'Digital', modulation:'PSK', bandwidth:3, use:'Tactical Data Link', hopping:'No', pattern:'slew', wiki:'https://www.sigidwiki.com/wiki/Link-11_SLEW', clue:'Single-tone Link-11 variant: compact, dense, and military data-link looking.' },
+      { name:'Link 16 / MIDS', family:'Digital', modulation:'Spread Spectrum', bandwidth:3000, use:'Tactical Data Link', hopping:'Yes', pattern:'link16', wiki:'https://www.sigidwiki.com/wiki/Link-16', clue:'Fast tactical data link behaviour: bursty, hopping, and wide compared with voice channels.' },
+      { name:'SINCGARS FH', family:'Digital', modulation:'FM/FSK', bandwidth:25, use:'Military VHF', hopping:'Yes', pattern:'sincgars', wiki:'https://www.sigidwiki.com/wiki/SINCGARS', clue:'VHF combat-net radio style frequency hopping, narrow channel but jumping rapidly.' },
+      { name:'HAVE QUICK', family:'Analog/Digital', modulation:'AM', bandwidth:25, use:'Military UHF Air', hopping:'Yes', pattern:'havequick', wiki:'https://www.sigidwiki.com/wiki/HAVE_QUICK', clue:'UHF aircraft anti-jam style hopping signal, closer to airband behaviour than land mobile.' },
+      { name:'SATURN', family:'Digital', modulation:'Anti-jam UHF', bandwidth:25, use:'Military UHF Air', hopping:'Yes', pattern:'saturn', wiki:'https://www.sigidwiki.com/wiki/SATURN', clue:'NATO UHF anti-jam successor-style signal: hopping and tactical-air focused.' },
+      { name:'UHF SATCOM DAMA', family:'Digital', modulation:'PSK', bandwidth:25, use:'Military SATCOM', hopping:'No', pattern:'dama', wiki:'https://www.sigidwiki.com/wiki/DAMA', clue:'Satellite channel access waveform: blocky narrowband data rather than terrestrial voice.' },
+      { name:'MUOS', family:'Digital', modulation:'WCDMA-like', bandwidth:5000, use:'Military SATCOM', hopping:'No', pattern:'muos', wiki:'https://www.sigidwiki.com/wiki/MUOS', clue:'Wide military SATCOM waveform, more cellular-like than old narrow UHF SATCOM.' },
+      { name:'ROVER Video', family:'Digital', modulation:'COFDM', bandwidth:5000, use:'Military Video', hopping:'No', pattern:'rover', wiki:'https://www.sigidwiki.com/wiki/ROVER', clue:'Wide downlink video-style block with OFDM texture.' },
+      { name:'ANW2 / Wideband Networking', family:'Digital', modulation:'CPM/Networking', bandwidth:1200, use:'Military Networking', hopping:'No', pattern:'anw2', wiki:'https://www.sigidwiki.com/wiki/ANW2', clue:'Military wideband networking waveform: broader than voice, narrower than Wi-Fi.' },
+      { name:'Soldier Radio Waveform', family:'Digital', modulation:'Networking', bandwidth:1200, use:'Military Networking', hopping:'No', pattern:'srw', wiki:'https://www.sigidwiki.com/wiki/Soldier_Radio_Waveform', clue:'Tactical networking waveform with packet-like blocks and moderate bandwidth.' },
+
+      { name:'Wi-Fi', family:'Digital', modulation:'OFDM', bandwidth:20000, use:'Networking', hopping:'No', pattern:'wifi', wiki:'https://www.sigidwiki.com/wiki/WiFi', clue:'Very wide OFDM block with packet bursts.' },
+      { name:'LTE Downlink', family:'Digital', modulation:'OFDM', bandwidth:10000, use:'Cellular', hopping:'No', pattern:'lte', wiki:'https://www.sigidwiki.com/wiki/LTE', clue:'Wide cellular-style OFDM with rectangular resource blocks.' },
+      { name:'GSM', family:'Digital', modulation:'GMSK', bandwidth:200, use:'Cellular', hopping:'Optional', pattern:'gsm', wiki:'https://www.sigidwiki.com/wiki/GSM', clue:'Older cellular channel: narrower than LTE, structured and slot-like.' },
+      { name:'Bluetooth FHSS', family:'Digital', modulation:'GFSK', bandwidth:1, use:'Short Range', hopping:'Yes', pattern:'bt', wiki:'https://www.sigidwiki.com/wiki/Bluetooth', clue:'Tiny 2.4 GHz bursts that hop around quickly.' }
+    ];
+
+    const maxAttempts = 6;
+    const spectrum = document.getElementById('spectrum'), waterfall = document.getElementById('waterfall');
+    const sctx = spectrum.getContext('2d'), wctx = waterfall.getContext('2d');
+    const guessSelect = document.getElementById('guessSelect'), attemptsEl = document.getElementById('attempts');
+    const messageEl = document.getElementById('message'), hintBox = document.getElementById('hintBox');
+    const shareBtn = document.getElementById('shareBtn'), attemptCount = document.getElementById('attemptCount');
+    const puzzleId = document.getElementById('puzzleId'), modeLabel = document.getElementById('modeLabel');
+    const freqLabel = document.getElementById('freqLabel'), bwLabel = document.getElementById('bwLabel');
+    const signalList = document.getElementById('signalList');
+    const wikiBtn = document.getElementById('wikiBtn');
+
+    let answer, attempts = [], finished = false, mode = 'daily', seed = dailySeed(), hintLevel = 0;
+
+    function dailySeed() {
+      const d = new Date();
+      return Number(`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`);
+    }
+    function seededRand(seedValue) { let x = Math.sin(seedValue) * 10000; return x - Math.floor(x); }
+    function pickAnswer(seedValue) { return signals[Math.floor(seededRand(seedValue) * signals.length) % signals.length]; }
+    function fmtBandwidth(khz) { if (khz >= 1000) return `${khz/1000} MHz`; if (khz < 1) return `${Math.round(khz*1000)} Hz`; return `${khz} kHz`; }
+
+    function fakeFrequency(sig) {
+      const bands = {
+        Broadcast:[88.1,107.9], Voice:[136,174], 'Land Mobile':[380,520], 'Trunked Radio':[380,430],
+        Telemetry:[433,915], Aircraft:[1090,131.55], Marine:[161.975,162.025], 'Amateur Radio':[7.074,14.070],
+        'Tactical/Data Link':[225,400], 'Military HF':[3,30], 'Tactical Data Link':[225,1215], 'Military VHF':[30,88], 'Military UHF Air':[225,400], 'Military SATCOM':[240,320], 'Military Video':[1350,2500], 'Military Networking':[225,2000], Networking:[2412,2462], Cellular:[850,2140], 'Short Range':[2402,2480]
+      };
+      const b = bands[sig.use] || [100,1000], r = seededRand(seed + sig.name.length * 31);
+      return (b[0] + (b[1] - b[0]) * r).toFixed(b[0] < 30 ? 3 : 1);
+    }
+
+    function startGame(newMode='daily') {
+      mode = newMode;
+      seed = mode === 'daily' ? dailySeed() : Math.floor(Math.random() * 9999999);
+      answer = pickAnswer(seed);
+      attempts = []; finished = false; hintLevel = 0;
+      modeLabel.textContent = mode === 'daily' ? 'Daily' : 'Practice';
+      puzzleId.textContent = mode === 'daily' ? `#${seed}` : 'Practice';
+      messageEl.textContent = 'Pick a signal type and send a guess.';
+      hintBox.textContent = 'First hint: look at occupied bandwidth, burst pattern, hopping behaviour, and whether it feels like voice, data, broadcast, cellular, or tactical networking.';
+      shareBtn.style.display = 'none';
+      wikiBtn.style.display = 'none';
+      freqLabel.textContent = `Centre: ${fakeFrequency(answer)} MHz`;
+      bwLabel.textContent = `Bandwidth: ${fmtBandwidth(answer.bandwidth)} | Visual model: ${answer.pattern}`;
+      renderAttempts(); drawSignal();
+    }
+
+    function populateSelect() {
+      signals.forEach(sig => {
+        const opt = document.createElement('option');
+        opt.value = sig.name; opt.textContent = sig.name; guessSelect.appendChild(opt);
+      });
+      signalList.textContent = `Every option can appear as the mystery signal: ${signals.map(s => s.name).join(', ')}`;
+    }
+
+    function compareGuess(guess) {
+      return [
+        ['Family', guess.family, answer.family],
+        ['Modulation', guess.modulation, answer.modulation],
+        ['Bandwidth', bandwidthLabel(guess.bandwidth, answer.bandwidth), 'match-bandwidth'],
+        ['Use', guess.use, answer.use],
+        ['Hopping', guess.hopping, answer.hopping]
+      ];
+    }
+    function bandwidthLabel(g,a) {
+      const ratio = Math.max(g,a) / Math.max(.01, Math.min(g,a));
+      if (ratio <= 1.25) return 'Exact';
+      if (ratio <= 4) return 'Close';
+      return g > a ? 'Too wide' : 'Too narrow';
+    }
+    function chipClass(label,value,target) {
+      if (target === 'match-bandwidth') return value === 'Exact' ? 'good' : value === 'Close' ? 'close' : 'bad';
+      return value === target ? 'good' : 'bad';
+    }
+
+    function makeGuess() {
+      if (finished) return;
+      const guess = signals.find(s => s.name === guessSelect.value);
+      if (attempts.some(a => a.name === guess.name)) { messageEl.textContent = 'You already tried that one.'; return; }
+      attempts.push(guess);
+      if (guess.name === answer.name) {
+        finished = true; messageEl.textContent = `Correct. It was ${answer.name}.`; hintBox.textContent = answer.clue; shareBtn.style.display = 'block';
+        wikiBtn.style.display = 'block';
+      } else if (attempts.length >= maxAttempts) {
+        finished = true; messageEl.textContent = `Out of attempts. The answer was ${answer.name}.`; hintBox.textContent = answer.clue; shareBtn.style.display = 'block';
+        wikiBtn.style.display = 'block';
+      } else {
+        messageEl.textContent = 'Not it. Use the feedback and try again.'; hintBox.textContent = progressiveHint();
+      }
+      renderAttempts();
+    }
+
+    function hintList() {
+      return [
+        `Hint 1: this is ${answer.family.toLowerCase()}.`,
+        `Hint 2: occupied bandwidth is about ${fmtBandwidth(answer.bandwidth)}.`,
+        `Hint 3: modulation family is ${answer.modulation}.`,
+        `Hint 4: common use is ${answer.use.toLowerCase()}.`,
+        `Hint 5: hopping behaviour: ${answer.hopping}.`,
+        `Final hint: ${answer.clue}`
+      ];
+    }
+
+    function progressiveHint() {
+      const hints = hintList();
+      return hints[Math.min(attempts.length - 1, hints.length - 1)];
+    }
+
+    function renderAttempts() {
+      attemptCount.textContent = `${attempts.length} / ${maxAttempts}`;
+      attemptsEl.innerHTML = '';
+      attempts.forEach((guess, i) => {
+        const row = document.createElement('div');
+        row.className = 'attempt';
+        row.innerHTML = `<div class="attempt-title"><span>${i+1}. ${guess.name}</span><span>${guess.name === answer.name ? 'LOCKED' : 'MISS'}</span></div><div class="chips"></div>`;
+        const chips = row.querySelector('.chips');
+        compareGuess(guess).forEach(([label,value,target]) => {
+          const chip = document.createElement('span');
+          chip.className = `chip ${chipClass(label,value,target)}`;
+          chip.textContent = `${label}: ${value}`;
+          chips.appendChild(chip);
+        });
+        attemptsEl.appendChild(row);
+      });
+    }
+
+    function clearCanvas(ctx,w,h) { ctx.fillStyle = '#030712'; ctx.fillRect(0,0,w,h); }
+    function noise(seedOffset) { return seededRand(seed + seedOffset) * 2 - 1; }
+    function drawGrid(ctx,w,h) {
+      ctx.strokeStyle = 'rgba(148,163,184,.13)'; ctx.lineWidth = 1;
+      for (let x=0; x<=w; x+=w/10) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+      for (let y=0; y<=h; y+=h/5) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+    }
+    function signalEnvelope(pattern,x,t=0) {
+      const c=.5, d=Math.abs(x-c);
+
+      // Big obvious families first.
+      if (pattern === 'wide-fm') return Math.max(0,1-d/.25)*.65 + Math.max(0,1-d/.055)*.22;
+      if (pattern === 'wifi') return d < .36 ? .55 + .2*Math.sin(x*95) + .08*Math.sin(t*50) : 0;
+      if (pattern === 'lte') return d < .27 ? .62 + .18*(Math.sin(x*45)>0?1:.25) : 0;
+      if (pattern === 'muos') return d < .2 ? .58 + .16*Math.sin(x*100+t*10) : 0;
+      if (pattern === 'rover') return d < .22 ? .62 + .22*(Math.sin(x*85)>0?1:.15) : 0;
+      if (pattern === 'anw2') return d < .14 ? .6 + .2*Math.sin(x*125+t*28) : 0;
+      if (pattern === 'srw') return d < .1 ? .58 + .15*Math.sin(x*155+t*35) : 0;
+
+      // Hopping / chirping.
+      if (pattern === 'hopping') return Math.max(0,1-Math.abs(x-(.12+((t*6)%1)*.76))/.018);
+      if (pattern === 'sincgars') return Math.max(0,1-Math.abs(x-(.1+((t*13)%1)*.8))/.012);
+      if (pattern === 'havequick') return Math.max(0,1-Math.abs(x-(.15+((t*9+.2)%1)*.7))/.018);
+      if (pattern === 'saturn') return Math.max(0,1-Math.abs(x-(.08+((t*17+.35)%1)*.84))/.01);
+      if (pattern === 'bt') return Math.max(0,1-Math.abs(x-(.07+((t*23+.1)%1)*.86))/.009);
+      if (pattern === 'link16') return Math.max(0,1-Math.abs(x-(.05+((t*29+.18)%1)*.9))/.013);
+      if (pattern === 'lora') return Math.max(0,1-Math.abs(x-((t*.85)%1))/.018) + Math.max(0,1-Math.abs(x-(1-((t*.85)%1)))/.018)*.35;
+
+      // Very narrow amateur/digital.
+      if (pattern === 'ft8') return [.455,.47,.485,.5,.515,.53,.545].reduce((m,p)=>Math.max(m,Math.max(0,1-Math.abs(x-p)/.0035)),0);
+      if (pattern === 'psk31') return Math.max(0,1-d/.0028);
+      if (pattern === 'acars') return Math.max(0,1-d/.01) + Math.max(0,1-Math.abs(x-.525)/.006)*.35;
+      if (pattern === 'adsb') return Math.max(0,1-d/.009) + Math.max(0,1-Math.abs(x-.49)/.004)*.45 + Math.max(0,1-Math.abs(x-.51)/.004)*.45;
+
+      // Voice / land mobile.
+      if (pattern === 'am-voice') return Math.max(0,1-d/.017) + Math.max(0,1-Math.abs(x-.455)/.006)*.26 + Math.max(0,1-Math.abs(x-.545)/.006)*.26;
+      if (pattern === 'voice-fm') return Math.max(0,1-d/.024) * (.7 + .25*Math.sin(t*35));
+      if (pattern === 'p25') return Math.max(0,1-d/.027) * (.78 + .18*Math.sin(x*160));
+      if (pattern === 'dmr') return Math.max(0,1-d/.025) * ((Math.sin(t*90)>0) ? .92 : .42);
+      if (pattern === 'nxdn') return Math.max(0,1-d/.014) * (.86 + .14*Math.sin(x*130));
+      if (pattern === 'tetra') return Math.max(0,1-d/.045) * (.7 + .25*(Math.sin(x*180)>0?1:.2));
+
+      // HF/military serial tone styles.
+      if (pattern === 'stanag4285') return Math.max(0,1-d/.018) * (.85 + .15*Math.sin(x*190+t*8));
+      if (pattern === 'mil188') return Math.max(0,1-d/.022) * (.72 + .28*Math.sin(x*135+t*17));
+      if (pattern === 'mil188b') return Math.max(0,1-d/.03) * (.65 + .22*(Math.sin(x*210+t*22)>0?1:.25));
+      if (pattern === 'ale') return Math.max(0,1-d/.02) * (Math.sin(x*210) > 0 ? 1 : .36);
+      if (pattern === 'link11') return Math.max(0,1-d/.026) * (.8 + .2*Math.sin(t*55));
+      if (pattern === 'slew') return Math.max(0,1-d/.018) * (.72 + .28*Math.sin(x*230+t*31));
+      if (pattern === 'dama') return Math.max(0,1-d/.04) * (.7 + .25*(Math.sin(t*75)>0?1:.2));
+
+      // Civil structured.
+      if (pattern === 'ais') return Math.max(0,1-d/.035) * (.9 + .1*Math.sin(x*150));
+      if (pattern === 'gsm') return Math.max(0,1-d/.07) * (Math.sin(t*70) > -.2 ? .9 : .35);
+
+      return Math.max(0,1-d/.025);
+    }
+    function drawSpectrum(pattern) {
+      const w=spectrum.width, h=spectrum.height; clearCanvas(sctx,w,h); drawGrid(sctx,w,h);
+      sctx.lineWidth=2; sctx.strokeStyle='#38bdf8'; sctx.beginPath();
+      for (let px=0; px<w; px++) {
+        const x=px/w, env=signalEnvelope(pattern,x,.35), floor=.18+.035*noise(px*13+9), amp=Math.min(.95,floor+env*.7), y=h-amp*h;
+        if (px===0) sctx.moveTo(px,y); else sctx.lineTo(px,y);
+      }
+      sctx.stroke(); sctx.fillStyle='rgba(56,189,248,.12)'; sctx.lineTo(w,h); sctx.lineTo(0,h); sctx.closePath(); sctx.fill();
+    }
+    function heat(v) {
+      const a=Math.max(0,Math.min(1,v)), r=Math.floor(25+a*230), g=Math.floor(30+Math.max(0,a-.35)*240), b=Math.floor(45+Math.max(0,a-.72)*180);
+      return `rgb(${r},${g},${b})`;
+    }
+    function burstActive(pattern,row) {
+      if (pattern === 'voice-fm') return Math.sin(row*.15) > -.25 && Math.sin(row*.047) > -.65;
+      if (pattern === 'adsb') return row % 44 < 5;
+      if (pattern === 'acars' || pattern === 'ais') return row % 38 < 12;
+      if (pattern === 'wifi') return row % 32 < 18 || row % 97 < 15;
+      if (pattern === 'ft8') return row % 70 < 54;
+      if (pattern === 'ale') return row % 46 < 15;
+      if (pattern === 'stanag4285' || pattern === 'mil188' || pattern === 'mil188b') return row % 90 < 78;
+      if (pattern === 'link11' || pattern === 'slew') return row % 76 < 66;
+      if (pattern === 'dama') return row % 54 < 38;
+      if (pattern === 'rover' || pattern === 'anw2' || pattern === 'srw' || pattern === 'muos') return row % 40 < 30;
+      if (pattern === 'gsm') return row % 18 < 12;
+      if (pattern === 'bt') return row % 26 < 8;
+      return true;
+    }
+    function drawWaterfall(pattern) {
+      const w=waterfall.width, h=waterfall.height; clearCanvas(wctx,w,h);
+      const rows=160, rowH=h/rows;
+
+      for (let r=0; r<rows; r++) {
+        const t=r/rows;
+        for (let x=0; x<w; x+=3) {
+          const nx=x/w;
+          let env=burstActive(pattern,r) ? signalEnvelope(pattern,nx,t) : 0;
+
+          // Add resource-block/checker texture for OFDM/networking signals.
+          if ((pattern==='lte' || pattern==='wifi' || pattern==='rover' || pattern==='muos') && env > 0) {
+            const block = ((Math.floor(nx*34)+Math.floor(t*46)) % 3) === 0 ? .22 : 0;
+            env = Math.min(1, env + block);
+          }
+
+          // Add slot timing bars for TDMA-looking systems.
+          if ((pattern==='dmr' || pattern==='tetra' || pattern==='gsm') && env > 0 && r % 18 < 3) {
+            env = Math.min(1, env + .28);
+          }
+
+          // Add dotted burst preambles.
+          if ((pattern==='ale' || pattern==='acars' || pattern==='ais' || pattern==='adsb') && env > 0 && x % 30 < 6) {
+            env = Math.min(1, env + .2);
+          }
+
+          const n=.1+.09*seededRand(seed+r*991+x*17);
+          const val=Math.min(1,n+env*.9);
+          wctx.fillStyle=heat(val);
+          wctx.fillRect(x,r*rowH,3,Math.ceil(rowH));
+        }
+      }
+
+      // Visual centre marker, subtle like a tuned SDR.
+      wctx.strokeStyle='rgba(255,255,255,.11)';
+      wctx.beginPath(); wctx.moveTo(w/2,0); wctx.lineTo(w/2,h); wctx.stroke();
+
+      wctx.strokeStyle='rgba(148,163,184,.18)';
+      wctx.strokeRect(.5,.5,w-1,h-1);
+    }
+    function drawSignal() { drawSpectrum(answer.pattern); drawWaterfall(answer.pattern); }
+    function revealHint() {
+      const hints = hintList();
+      hintLevel = Math.min(hintLevel + 1, hints.length);
+      hintBox.textContent = hints[hintLevel - 1];
+    }
+    function openWiki() {
+      if (answer && answer.wiki) window.open(answer.wiki, '_blank', 'noopener');
+    }
+    function copyResult() {
+      const icons = attempts.map(a => a.name === answer.name ? '🟩' : '⬛').join('');
+      const result = `SIGdle ${mode === 'daily' ? '#' + seed : 'Practice'} ${attempts.find(a => a.name === answer.name) ? attempts.length : 'X'}/6\n${icons}\nAnswer: ${answer.name}`;
+      navigator.clipboard?.writeText(result).then(() => messageEl.textContent='Result copied.').catch(() => messageEl.textContent=result);
+    }
+
+    document.getElementById('guessBtn').addEventListener('click', makeGuess);
+    document.getElementById('revealBtn').addEventListener('click', revealHint);
+    document.getElementById('newPracticeBtn').addEventListener('click', () => startGame('practice'));
+    document.getElementById('resetBtn').addEventListener('click', () => startGame('daily'));
+    document.getElementById('redrawBtn').addEventListener('click', drawSignal);
+    shareBtn.addEventListener('click', copyResult);
+    wikiBtn.addEventListener('click', openWiki);
+
+    populateSelect();
+    startGame('daily');
+  </script>
+</body>
+</html>
