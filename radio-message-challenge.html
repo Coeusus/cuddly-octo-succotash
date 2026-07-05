@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Radio Message Challenge v0.7</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#06101c;--panel:#0e1b2c;--line:#24405f;--text:#f8fafc;--muted:#aebbd0;--blue:#38bdf8;--green:#67ff72;--red:#ff4460;--yellow:#facc15;--orange:#fb923c}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% -10%,#16314f 0,#081422 38%,#040a12 100%);color:var(--text);font-family:Inter,Arial,sans-serif}
+.app{max-width:1050px;margin:0 auto;padding:12px 12px 50px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}.brand{font-size:26px;font-weight:900}.badge{font-size:13px;border:1px solid #31577d;background:#102947;color:#bde2ff;border-radius:999px;padding:4px 9px;margin-left:8px}a{color:#9fd8ff;text-decoration:none}
+.panel{background:linear-gradient(145deg,rgba(16,30,47,.96),rgba(9,20,34,.99));border:1px solid var(--line);border-radius:16px;box-shadow:0 16px 30px rgba(0,0,0,.22)}
+.top{display:grid;grid-template-columns:1.25fr .75fr;gap:10px;margin-bottom:10px}.mission{padding:14px}.mission h1{margin:0 0 7px;font-size:23px}.mission p{margin:0;color:var(--muted);line-height:1.45}.stats{padding:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{background:#07182a;border:1px solid #1b3855;border-radius:12px;padding:10px;text-align:center}.stat small{display:block;color:var(--muted);font-weight:800;text-transform:uppercase;font-size:11px}.stat b{display:block;font-size:22px;margin-top:3px}
+.controls{padding:12px;display:flex;gap:10px;margin-bottom:10px;align-items:center;justify-content:flex-end}.controls label{display:block;font-weight:800;color:var(--muted);margin-bottom:5px;font-size:13px}button,select,input{width:100%;background:linear-gradient(#15243a,#0e1828);border:1px solid #28415f;color:#eef7ff;border-radius:10px;padding:10px 12px;font-weight:800}button{cursor:pointer}button:hover{border-color:#38bdf8}.primary{border-color:#1780ff;color:#61b8ff}.danger{border-color:#7f1d1d;color:#ff9aaa}.success{border-color:#166534;color:#88ff91}
+.game{display:grid;grid-template-columns:1fr .85fr;gap:10px}.radio{padding:14px}.speaker{height:210px;border-radius:14px;border:1px solid #1d3b5a;background:radial-gradient(circle at center,#132842,#06101c 68%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}.speaker:before{content:"";position:absolute;inset:22px;border-radius:999px;border:22px solid rgba(60,100,135,.18);box-shadow:0 0 0 18px rgba(30,55,80,.13),0 0 50px rgba(56,189,248,.15)}.speaker:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(255,255,255,.025) 5px 6px);opacity:.35}.wave{position:relative;z-index:1;text-align:center}.wave b{font-size:44px;color:#bde2ff;text-shadow:0 0 18px rgba(56,189,248,.5)}.wave span{display:block;color:#9fb1c8;margin-top:8px;font-weight:800}.listening .speaker{box-shadow:0 0 35px rgba(56,189,248,.25)}.listening .wave b{animation:pulse .45s infinite alternate}@keyframes pulse{to{transform:scale(1.08);color:#67ff72}}
+.transcript{margin-top:10px;padding:10px;border:1px dashed #31577d;border-radius:12px;background:#061526;color:#aebbd0;min-height:48px;font-size:14px;line-height:1.4}.hiddenText{filter:blur(5px);user-select:none}.notes{padding:14px}.notes textarea{width:100%;height:150px;resize:vertical;background:#061526;border:1px solid #31577d;border-radius:12px;color:#f8fafc;padding:10px;font-size:15px}.question{margin-top:10px;padding:12px;border:1px solid #31577d;border-radius:12px;background:#07182a}.question b{display:block;font-size:18px;margin-bottom:8px}.answers{display:grid;grid-template-columns:1fr;gap:8px}.answer.correct{background:#12351d;border-color:#67ff72}.answer.wrong{background:#3b1118;border-color:#ff4460}.answer.selected{border-color:#38bdf8;background:#0b2d4a}.feedback{min-height:28px;margin-top:10px;font-weight:900;font-size:18px}.good{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--yellow)}
+.pill{display:inline-block;border:1px solid #31577d;border-radius:999px;padding:3px 8px;color:#bde2ff;background:#102947;font-weight:800;font-size:12px;margin:2px}
+@media(max-width:850px){.app{padding:8px 8px 40px}.top,.game{grid-template-columns:1fr}.controls{justify-content:stretch}.controls button{width:100%}.stats{grid-template-columns:repeat(2,1fr)}.brand{font-size:22px}.speaker{height:180px}}
+@media(max-width:460px){.mission h1{font-size:20px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand">🎙️ Radio Message Challenge <span class="badge">v0.7</span></div><a href="index.html">← Back to home</a></header>
+<section class="top">
+  <div class="panel mission"><h1>Copy the important information</h1><p>Listen to the generated radio transmission, take notes, then answer the key information question after it finishes. The content, pacing, voice, and interference randomise every round.</p></div>
+  <div class="panel stats"><div class="stat"><small>Score</small><b id="score">0</b></div><div class="stat"><small>Streak</small><b id="streak">0</b></div><div class="stat"><small>Round</small><b id="round">1</b></div><div class="stat"><small>Accuracy</small><b id="acc">0%</b></div></div>
+</section>
+<section class="panel controls">
+  <button id="newRound" class="primary">New Transmission</button>
+</section>
+<section class="game">
+  <div class="panel radio" id="radioPanel">
+    <div class="speaker"><div class="wave"><b>▰▰▰</b><span id="status">Ready</span></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><button id="play" class="success">▶ Play Transmission</button><button id="replay">↻ Replay -30 pts</button></div>
+    <div class="transcript hiddenText" id="transcript">Transcript hidden until answer.</div>
+
+  </div>
+  <div class="panel notes">
+    <label style="font-weight:900;color:#aebbd0">Radio log / scratch notes</label>
+    <textarea id="notes" placeholder="Example: A21 > Sunray, 3 techs, E5724, north, fire mission"></textarea>
+    <div class="question"><b id="qText">Press New Transmission.</b><div class="answers" id="answers"></div></div>
+    <div id="feedback" class="feedback warn">Generate a transmission, listen, then answer.</div>
+  </div>
+</section>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+let score=0,streak=0,round=1,played=0,correct=0,current=null,answered=false,audioCtx=null,noiseNodes=null,availableVoices=[],lastVoiceName=null,lastProfileName=null,playCount=0;
+const difficulties=['recruit','operator','expert'];
+const callsigns=['Sunray','Alpha Two One','Bravo Three','Charlie Six','Delta Three One','Echo One Zero','Hammer One','Raven Two','Viper Four','Atlas Zero','Kilo Nine','Warhorse'];
+const irregularNames=['Hawk','Fox','Teacher','Old Man','Driver One','Blue House','The Mechanic','North Gate','River Team','Farm Team','Little Bird','Market Watch'];
+const grids=['Echo Five Seven Two Four','Foxtrot Three One Four Eight','Golf Nine One Three Four','Hotel Four Two Eight Six','Delta Six Zero One Nine','India Seven Five Three Two','Juliet Two Eight Six Five','Lima Zero Four Nine One'];
+const enemyCount=['one','two','three','four','six','eight'];
+const enemyType=['enemy personnel','technical vehicles','armoured vehicles','dismounted fighters','motorbikes','supply trucks','enemy UAVs','mortar team'];
+const civObjects=['white pickup','blue van','motorbike','fuel truck','old bus','black SUV','tractor','supply ute'];
+const dirs=['north','south','east','west','north-east','north-west','south-east','south-west'];
+const routes=['Route Blue','Route Red','the main supply route','the western track','the dry creek bed','the ridgeline','the tree line','Highway Seven'];
+const civPlaces=['the old warehouse','the bridge','the market road','the south checkpoint','the quarry','the school yard','the water tower','the orange grove','the hill track','the fuel station'];
+const requests=['request immediate fire mission','request UAV surveillance','request air support','request permission to engage','request blocking position','request medical support','request quick reaction force'];
+const casualties=['one urgent casualty','two priority casualties','one routine casualty','three walking wounded','one litter patient'];
+const landing=['Landing Zone Copper','Landing Zone Falcon','Landing Zone Dingo','Landing Zone Raven','Landing Zone Iron'];
+const speakerProfiles=[
+  {name:'Deep net control',rate:.88,pitch:.48,volume:.98},
+  {name:'Calm operator',rate:.92,pitch:.72,volume:.96},
+  {name:'Fast operator',rate:1.18,pitch:.62,volume:.98},
+  {name:'Low radio voice',rate:1.02,pitch:.38,volume:1},
+  {name:'Nervous operator',rate:1.08,pitch:1.18,volume:.95},
+  {name:'Clipped net control',rate:1.24,pitch:.55,volume:.98},
+  {name:'Young operator',rate:1.04,pitch:1.38,volume:.92}
+];
+function trafficType(){return pick(['contact','move','casevac','fire','sitrep','irregularMove','irregularMeet','irregularWarning','smuggler','localAid'])}
+function loadVoices(){
+  availableVoices=(speechSynthesis?.getVoices?.()||[]).filter(v=>/^en/i.test(v.lang));
+}
+function pickDifferent(list,last,keyFn=x=>x){
+  if(!list.length)return null;
+  let usable=list.filter(x=>keyFn(x)!==last);
+  return pick(usable.length?usable:list);
+}
+function chooseVoice(){
+  if(!availableVoices.length)return null;
+  // Prefer locally installed English voices when the browser exposes them, but rotate regardless.
+  let locals=availableVoices.filter(v=>v.localService);
+  let pool=locals.length?locals:availableVoices;
+  let v=pickDifferent(pool,lastVoiceName,v=>v.name);
+  lastVoiceName=v?.name||null;
+  return v;
+}
+function voiceName(v){return v?`${v.name.replace(/\s*\(.*?\)/g,'')} (${v.lang})`:'Browser default voice'}
+function singleQuestion(prompt,answer){return {mode:'single',prompt,answer};}
+function tfQuestion(prompt,isTrue){return {mode:'tf',prompt,answer:isTrue?'True':'False'};}
+function multiQuestion(prompt,correct,wrong){return {mode:'multi',prompt,correct:[...new Set(correct)],wrong:[...new Set(wrong)]};}
+function weightedPick(items){return pick(items);}
+function addMany(list,item,n=1){for(let i=0;i<n;i++)list.push(item);}
+function buildMessage(){
+  let type=trafficType(), sender=pick(callsigns), recipient=pick(callsigns.filter(c=>c!==sender)), grid=pick(grids), count=pick(enemyCount), eType=pick(enemyType), dir=pick(dirs), route=pick(routes), req=pick(requests), cas=pick(casualties), lz=pick(landing), place=pick(civPlaces), obj=pick(civObjects), nameA=pick(irregularNames), nameB=pick(irregularNames);
+  while(nameB===nameA) nameB=pick(irregularNames);
+  let diff=pick(difficulties), profile=pickDifferent(speakerProfiles,lastProfileName,p=>p.name), voiceSpeed=pick([0.80,0.88,0.96,1.04,1.14,1.24]), text='', facts={type,sender,recipient,grid,count,eType,dir,route,req,cas,lz,diff,profile,voiceSpeed,place,obj,nameA,nameB};
+  lastProfileName=profile.name;
+  if(type==='contact') text=`${recipient}, this is ${sender}. Contact. ${count} ${eType} moving ${dir} along ${route}. Grid ${grid}. ${req}. Over.`;
+  if(type==='move') text=`${recipient}, this is ${sender}. Move immediately to Grid ${grid}. Use ${route}. Hold position and observe to the ${dir}. Report when set. Over.`;
+  if(type==='casevac') text=`${recipient}, this is ${sender}. CASEVAC required. ${cas} at Grid ${grid}. Marking ${lz}. Enemy last seen moving ${dir}. Request extraction. Over.`;
+  if(type==='fire') text=`${recipient}, this is ${sender}. Fire mission. Target is ${count} ${eType} at Grid ${grid}. Direction of movement ${dir}. Danger close, adjust fire. Over.`;
+  if(type==='sitrep') text=`${recipient}, this is ${sender}. SITREP. We are at Grid ${grid}. Observed ${count} ${eType} near ${route}. They are moving ${dir}. We are holding. Over.`;
+  if(type==='irregularMove') text=`${nameA}, listen. Move the ${obj} off ${place} before dark. The patrol is coming from the ${dir}. Do not use ${route}. Call me when it is hidden.`;
+  if(type==='irregularMeet') text=`${nameB}, this is ${nameA}. Bring ${count} men to ${place}. Use the ${route}. Wait there for the ${obj}. No lights, no radio after this.`;
+  if(type==='irregularWarning') text=`Brother, they are near ${place}. I counted ${count} ${eType}. They are moving ${dir}. Tell ${nameB} to leave the ${obj} and go now.`;
+  if(type==='smuggler') text=`Driver, the road is blocked near ${place}. Take ${route} instead. Meet at ${place} in twenty minutes. The ${obj} must stay out of sight.`;
+  if(type==='localAid') text=`Control, this is field team. We have ${count} civilians at ${place}. One vehicle damaged, moving ${dir} is not possible. Request medical support and transport.`;
+
+  let qs=[];
+  const add=(q,w=1)=>addMany(qs,q,w);
+  // Content questions are deliberately weighted heavier than callsigns.
+  add(singleQuestion('What direction was mentioned?',dir),3);
+  if(['contact','move','casevac','fire','sitrep'].includes(type)) add(singleQuestion('What grid was reported?',grid),4);
+  if(['contact','fire','sitrep','irregularWarning'].includes(type)){add(singleQuestion('How many enemy were reported?',count),3);add(singleQuestion('What enemy type was reported?',eType),3);}
+  if(type==='contact'){add(singleQuestion('What route or feature were they moving along?',route),3);add(singleQuestion('What support/action was requested?',req),3);add(multiQuestion('Which details were mentioned?', [count,eType,route,dir], [pick(grids),pick(civPlaces),pick(civObjects),pick(casualties)]),2);}
+  if(type==='move'){add(singleQuestion('What route should be used?',route),3);add(singleQuestion('Which direction should they observe?',dir),3);add(singleQuestion('What grid were they ordered to move to?',grid),3);add(tfQuestion(`The order was to move to ${grid}.`,true));add(tfQuestion(`The order was to use ${pick(routes.filter(r=>r!==route))}.`,false));}
+  if(type==='casevac'){add(singleQuestion('What casualty category was reported?',cas),4);add(singleQuestion('What landing zone was named?',lz),4);add(singleQuestion('What grid was the CASEVAC at?',grid),3);add(multiQuestion('Which CASEVAC details were mentioned?', [cas,lz,grid], [pick(routes),pick(civPlaces),pick(enemyType)]),2);}
+  if(type==='fire'){add(singleQuestion('What type of mission was requested?','Fire mission'),2);add(singleQuestion('What grid was the target at?',grid),4);add(singleQuestion('What was the target?',eType),3);add(tfQuestion(`The target was moving ${dir}.`,true));add(tfQuestion(`The target was at ${pick(grids.filter(g=>g!==grid))}.`,false));}
+  if(type==='sitrep'){add(singleQuestion('Where was the reporting unit located?',grid),4);add(singleQuestion('What was observed?',eType),3);add(singleQuestion('Near what route or feature were they observed?',route),3);}
+  if(type==='irregularMove'){add(singleQuestion('What vehicle/object had to be hidden?',obj),4);add(singleQuestion('Where was it being moved from?',place),4);add(singleQuestion('Which route were they told not to use?',route),3);add(singleQuestion('Where was the patrol coming from?',dir),3);add(multiQuestion('Which details were mentioned?', [obj,place,route], [pick(grids),pick(landing),pick(casualties)]),2);}
+  if(type==='irregularMeet'){add(singleQuestion('Where was the meeting point?',place),4);add(singleQuestion('How many people were requested?',count),3);add(singleQuestion('What route were they told to use?',route),3);add(singleQuestion('What vehicle/object were they waiting for?',obj),3);add(multiQuestion('Which details were mentioned?', [place,route,obj], [pick(grids),pick(landing),pick(casualties)]),2);}
+  if(type==='irregularWarning'){add(singleQuestion('Where were they seen?',place),4);add(singleQuestion('What vehicle/object was mentioned?',obj),3);add(singleQuestion('Which direction were they moving?',dir),3);add(singleQuestion('How many enemy were counted?',count),3);}
+  if(type==='smuggler'){add(singleQuestion('Where was the road blocked?',place),4);add(singleQuestion('Which route should be used instead?',route),4);add(singleQuestion('Where was the meeting point?',place),3);add(singleQuestion('What vehicle/object had to stay hidden?',obj),3);add(tfQuestion(`The road was blocked near ${place}.`,true));add(tfQuestion(`They were told to use ${pick(routes.filter(r=>r!==route))}.`,false));}
+  if(type==='localAid'){add(singleQuestion('Where were the civilians located?',place),4);add(singleQuestion('How many civilians were reported?',count),3);add(singleQuestion('What support was requested?','medical support and transport'),4);add(singleQuestion('Which direction was not possible?',dir),3);}
+  // Rare sender check only; no "who was it for" questions.
+  if(Math.random()<.15 && ['contact','move','casevac','fire','sitrep'].includes(type)) add(singleQuestion('Which callsign was reporting?',sender),1);
+  let q=weightedPick(qs);
+  return {text,facts,q,type,difficulty:diff,profile,voiceSpeed,questionRevealed:false};
+}
+function wrongAnswers(answer){let pools=[callsigns,irregularNames,grids,dirs,routes,civPlaces,requests,enemyCount,enemyType,civObjects,casualties,landing,['Fire mission','SITREP','CASEVAC','Move order','medical support and transport']].flat();return shuffle([...new Set(pools.filter(x=>x!==answer))]).slice(0,3);}
+function renderQuestion(){
+  $('answers').innerHTML='';
+  if(!current?.questionRevealed){$('qText').textContent='Question appears after the transmission.';return;}
+  let q=current.q;$('qText').textContent=q.prompt;
+  if(q.mode==='single'||q.mode==='tf'){
+    let options=q.mode==='tf'?['True','False']:shuffle([q.answer,...wrongAnswers(q.answer)]);
+    options.forEach(o=>{let b=document.createElement('button');b.className='answer';b.textContent=o;b.onclick=()=>answer(o,b);$('answers').appendChild(b)});
+  }else if(q.mode==='multi'){
+    let options=shuffle([...q.correct,...q.wrong]).slice(0,6);
+    let chosen=new Set();
+    options.forEach(o=>{let b=document.createElement('button');b.className='answer';b.textContent=o;b.onclick=()=>{if(chosen.has(o)){chosen.delete(o);b.classList.remove('selected')}else{chosen.add(o);b.classList.add('selected')}};$('answers').appendChild(b)});
+    let sub=document.createElement('button');sub.className='answer primary';sub.textContent='Submit selected answers';sub.onclick=()=>answer([...chosen],sub);$('answers').appendChild(sub);
+  }
+}
+function revealQuestion(){if(!current||answered)return;current.questionRevealed=true;renderQuestion();setFeed('Transmission ended. Answer from your notes.','warn')}
+function setFeed(t,c){let e=$('feedback');e.textContent=t;e.className='feedback '+c}
+function updateStats(){$('score').textContent=score;$('streak').textContent=streak;$('round').textContent=round;$('acc').textContent=played?Math.round(correct/played*100)+'%':'0%'}
+function stopNoise(){if(noiseNodes){try{noiseNodes.src.stop()}catch(e){}try{noiseNodes.gain.disconnect()}catch(e){}noiseNodes=null;}}
+function startContinuousNoise(level=.065){
+  try{
+    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    stopNoise();
+    const seconds=2, sr=audioCtx.sampleRate, buf=audioCtx.createBuffer(1,sr*seconds,sr), data=buf.getChannelData(0);
+    let last=0;
+    for(let i=0;i<data.length;i++){last=last*.78+(Math.random()*2-1)*.22;data[i]=last;}
+    const src=audioCtx.createBufferSource(), gain=audioCtx.createGain(), filter=audioCtx.createBiquadFilter();
+    filter.type='bandpass'; filter.frequency.value=1500; filter.Q.value=.85;
+    gain.gain.value=level;
+    src.buffer=buf; src.loop=true; src.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination); src.start();
+    noiseNodes={src,gain,filter};
+  }catch(e){}
+}
+function noiseBlip(level=.10,ms=160){
+  try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();let sr=audioCtx.sampleRate,buf=audioCtx.createBuffer(1,Math.floor(sr*ms/1000),sr),data=buf.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*level*(1-i/data.length);let src=audioCtx.createBufferSource(),gain=audioCtx.createGain();gain.gain.value=1;src.buffer=buf;src.connect(gain);gain.connect(audioCtx.destination);src.start()}catch(e){}
+}
+function newRound(){
+  if('speechSynthesis' in window) speechSynthesis.cancel(); stopNoise();
+  current=buildMessage();answered=false;playCount=0;$('play').disabled=false;$('replay').disabled=true;$('replay').textContent='↻ Replay -30 pts';$('notes').value='';$('transcript').textContent='Transcript hidden until answer.';$('transcript').classList.add('hiddenText');$('status').textContent='Ready';$('radioPanel').classList.remove('listening');renderQuestion();
+  setFeed('Listen first. The question will appear after the transmission.','warn');updateStats();
+}
+function answer(o,btn){
+  if(answered||!current||!current.questionRevealed)return;
+  $('play').disabled=true;$('replay').disabled=true;answered=true;played++;
+  const q=current.q; let ok=false, correctText='';
+  if(q.mode==='multi'){
+    let got=[...(Array.isArray(o)?o:[])].sort(); let want=[...q.correct].sort();
+    ok=got.length===want.length && got.every((x,i)=>x===want[i]); correctText=want.join(', ');
+    [...document.querySelectorAll('.answer')].forEach(b=>{if(want.includes(b.textContent))b.classList.add('correct')});
+  }else{
+    ok=o===q.answer; correctText=q.answer;
+    [...document.querySelectorAll('.answer')].forEach(b=>{if(b.textContent===q.answer)b.classList.add('correct')});
+  }
+  $('transcript').textContent=current.text;$('transcript').classList.remove('hiddenText');
+  if(ok){correct++;streak++;let pts=100+streak*15;score+=pts;setFeed('Correct. +'+pts,'good')}else{streak=0;btn.classList.add('wrong');score=Math.max(0,score-25);setFeed('Wrong. Correct answer: '+correctText,'bad')}
+  round++;updateStats();
+}
+function degradedText(text){
+  if(current.difficulty==='operator'&&Math.random()>.45) text=text.replace('. Contact.','. Break. Contact.');
+  if(current.difficulty==='expert'){
+    let intr=pick([' Say again, last station unreadable. ',' Break break. ',' Static. Continue. ']);
+    let parts=text.split('. '); parts.splice(2,0,intr); text=parts.join('. ');
+  }
+  return text;
+}
+function speak(isReplay=false){
+  if(!current)newRound();
+  if(answered)return;
+  if(isReplay){score=Math.max(0,score-30);updateStats();setFeed('Replay used. -30 points. Listen carefully.','warn');}
+  playCount++; $('replay').disabled=false; $('replay').textContent='↻ Replay -30 pts';
+  if(!('speechSynthesis' in window)){setFeed('Speech synthesis is not supported here. Transcript shown for testing.','bad');$('transcript').textContent=current.text;$('transcript').classList.remove('hiddenText');revealQuestion();return;}
+  speechSynthesis.cancel(); stopNoise(); loadVoices();
+  let voice=chooseVoice();
+  let u=new SpeechSynthesisUtterance(degradedText(current.text));
+  if(voice) u.voice=voice;
+  let diff=current.difficulty, baseSpeed=current.voiceSpeed;
+  u.rate=baseSpeed*current.profile.rate*(diff==='expert'?1.08:diff==='recruit'?.92:1);
+  u.pitch=current.profile.pitch;
+  u.volume=current.profile.volume??.96;
+  $('status').textContent='Receiving...';$('radioPanel').classList.add('listening');
+  let hiss=diff==='recruit'?.045:diff==='operator'?.075:.105;
+  startContinuousNoise(hiss); noiseBlip(diff==='expert'?.22:.15,260);
+  let dropTimer=null;
+  if(diff!=='recruit') dropTimer=setInterval(()=>{ if(Math.random()>.38) noiseBlip(diff==='expert'?.24:.16,diff==='expert'?220:150); }, diff==='expert'?620:950);
+  u.onend=()=>{if(dropTimer)clearInterval(dropTimer);noiseBlip(.13,180);setTimeout(stopNoise,220);$('status').textContent='Transmission ended';$('radioPanel').classList.remove('listening');revealQuestion()};
+  // Some mobile browsers fire utterance errors even after playback starts. Do not show a false failure unless speech never begins.
+  let started=false; u.onstart=()=>{started=true};
+  u.onerror=()=>{if(dropTimer)clearInterval(dropTimer);setTimeout(stopNoise,180);$('radioPanel').classList.remove('listening');if(!started){$('status').textContent='Voice unavailable';setFeed('Voice playback was blocked. Tap Play again, or try another browser.','bad');}};
+  speechSynthesis.speak(u);
+  setFeed('Receiving transmission...', 'warn');
+}
+$('newRound').onclick=newRound;$('play').onclick=()=>speak(false);$('replay').onclick=()=>speak(true);
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;} else {setFeed('Speech synthesis not supported on this browser.','bad')}
+newRound();
+</script>
+</body>
+</html>
